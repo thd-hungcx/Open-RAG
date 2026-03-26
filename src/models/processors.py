@@ -702,6 +702,10 @@ class LangflowFileProcessor(TaskProcessor):
         settings: dict = None,
         delete_after_ingest: bool = True,
         replace_duplicates: bool = False,
+        department: str = None,
+        role: str = None,
+        shared: bool = False,
+        is_confidential: bool = False,
     ):
         super().__init__()
         self.langflow_file_service = langflow_file_service
@@ -715,6 +719,10 @@ class LangflowFileProcessor(TaskProcessor):
         self.settings = settings
         self.delete_after_ingest = delete_after_ingest
         self.replace_duplicates = replace_duplicates
+        self.department = department
+        self.role = role
+        self.shared = shared
+        self.is_confidential = is_confidential
 
     async def process_item(
         self, upload_task: UploadTask, item: str, file_task: FileTask
@@ -801,7 +809,10 @@ class LangflowFileProcessor(TaskProcessor):
                 owner_name=self.owner_name,
                 owner_email=self.owner_email,
                 connector_type="local",
-
+                department=self.department,
+                role=self.role,
+                shared=self.shared,
+                is_confidential=self.is_confidential,
             )
 
             # Update task with success

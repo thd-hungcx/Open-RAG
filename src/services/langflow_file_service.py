@@ -95,6 +95,10 @@ class LangflowFileService:
         source_url: Optional[str] = None,
         allowed_users: Optional[List[str]] = None,
         allowed_groups: Optional[List[str]] = None,
+        department: Optional[str] = None,
+        role: Optional[str] = None,
+        shared: bool = False,
+        is_confidential: bool = False,
     ) -> Dict[str, Any]:
         """
         Trigger the ingestion flow with provided file paths.
@@ -114,7 +118,7 @@ class LangflowFileService:
 
         # Pass files via tweaks to File component (File-PSU37 from the flow)
         if file_paths:
-            tweaks["DoclingRemote-Dp3PX"] = {"path": file_paths}
+            tweaks["DoclingRemote-HgmE8"] = {"path": file_paths}
 
         # Pass metadata via tweaks to OpenSearch component
         metadata_tweaks = []
@@ -181,6 +185,10 @@ class LangflowFileService:
             headers["X-Langflow-Global-Var-ALLOWED_GROUPS"] = json.dumps(
                 allowed_groups or []
             )
+        headers["X-Langflow-Global-Var-DEPARTMENT"] = str(department) if department else ""
+        headers["X-Langflow-Global-Var-ROLE"] = str(role) if role else ""
+        headers["X-Langflow-Global-Var-SHARED"] = "true" if shared else "false"
+        headers["X-Langflow-Global-Var-IS_CONFIDENTIAL"] = "true" if is_confidential else "false"
         
         # Add provider credentials as global variables for ingestion
         await add_provider_credentials_to_headers(headers, config, flows_service=self.flows_service)
@@ -474,7 +482,11 @@ class LangflowFileService:
         owner: Optional[str] = None,
         owner_name: Optional[str] = None,
         owner_email: Optional[str] = None,
-        connector_type: Optional[str] = None,   
+        connector_type: Optional[str] = None,
+        department: Optional[str] = None,
+        role: Optional[str] = None,
+        shared: bool = False,
+        is_confidential: bool = False,
     ) -> Dict[str, Any]:
         """
         Combined upload, ingest, and delete operation.
@@ -566,6 +578,10 @@ class LangflowFileService:
                 owner_name=owner_name,
                 owner_email=owner_email,
                 connector_type=connector_type,
+                department=department,
+                role=role,
+                shared=shared,
+                is_confidential=is_confidential,
             )
             logger.debug("[LF] Ingestion completed successfully")
         except Exception as e:

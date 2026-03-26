@@ -137,11 +137,13 @@ class TaskService:
         settings: dict = None,
         delete_after_ingest: bool = True,
         replace_duplicates: bool = False,
+        custom_metadata: dict = None,
     ) -> str:
         """Create a new upload task for Langflow file processing with upload and ingest"""
         # Use LangflowFileProcessor with user context
         from models.processors import LangflowFileProcessor
 
+        meta = custom_metadata or {}
         processor = LangflowFileProcessor(
             langflow_file_service=langflow_file_service,
             session_manager=session_manager,
@@ -154,6 +156,10 @@ class TaskService:
             settings=settings,
             delete_after_ingest=delete_after_ingest,
             replace_duplicates=replace_duplicates,
+            department=meta.get("department"),
+            role=meta.get("role"),
+            shared=meta.get("shared", False),
+            is_confidential=meta.get("is_confidential", False),
         )
         return await self.create_custom_task(user_id, file_paths, processor, original_filenames)
 

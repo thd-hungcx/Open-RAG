@@ -27,6 +27,10 @@ class RunIngestionBody(BaseModel):
     session_id: Optional[str] = None
     tweaks: Optional[dict] = None
     settings: Optional[dict] = None
+    department: Optional[str] = None
+    role: Optional[str] = None
+    shared: bool = False
+    is_confidential: bool = False
 
 
 class DeleteFilesBody(BaseModel):
@@ -124,6 +128,10 @@ async def run_ingestion(
             owner_name=user.name,
             owner_email=user.email,
             connector_type="local",
+            department=body.department,
+            role=body.role,
+            shared=body.shared,
+            is_confidential=body.is_confidential,
         )
         return JSONResponse(result)
     except Exception as e:
@@ -136,6 +144,10 @@ async def upload_and_ingest_user_file(
     settings_json: Optional[str] = Form(None, alias="settings"),
     tweaks_json: Optional[str] = Form(None, alias="tweaks"),
     delete_after_ingest: str = Form("true"),
+    department: Optional[str] = Form(None),
+    role: Optional[str] = Form(None),
+    shared: str = Form("false"),
+    is_confidential: str = Form("false"),
     langflow_file_service=Depends(get_langflow_file_service),
     session_manager=Depends(get_session_manager),
     task_service=Depends(get_task_service),
@@ -181,6 +193,12 @@ async def upload_and_ingest_user_file(
                 tweaks=tweaks,
                 settings=settings,
                 delete_after_ingest=delete_after_ingest.lower() == "true",
+                custom_metadata={
+                    "department": department,
+                    "role": role,
+                    "shared": shared.lower() == "true",
+                    "is_confidential": is_confidential.lower() == "true",
+                },
             )
 
             return JSONResponse(
