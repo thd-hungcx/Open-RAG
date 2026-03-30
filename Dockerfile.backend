@@ -1,0 +1,63 @@
+# syntax=docker/dockerfile:1.4
+# BuildKit: enables cache mounts and better layer reuse.
+#
+# Build: docker build -t openrag-backend .
+
+# -----------------------------------------------------------------------------
+# Stage: base (system + uv)
+# -----------------------------------------------------------------------------
+FROM python:3.13-slim AS base
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    openssl \
+    \
+    && curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="/root/.local/bin:$PATH"
+
+# -----------------------------------------------------------------------------
+# Stage: builder (deps + app)
+# -----------------------------------------------------------------------------
+FROM base AS builder
+
+# Build-time deps only (not in final image)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Dependency layer: reuse as long as lockfile and pyproject don't change
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv,uid=0,gid=0 \
+    uv sync
+
+# Application (invalidates after deps only when src/flows change)
+COPY src/ ./src/
+COPY flows/ ./flows/
+
+# -----------------------------------------------------------------------------
+# Stage: runtime (minimal image)
+# -----------------------------------------------------------------------------
+FROM python:3.13-slim AS runtime
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=builder /app /app
+
+ENV VIRTUAL_ENV=/app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+EXPOSE 8000
+
+CMD ["python", "src/main.py"]
