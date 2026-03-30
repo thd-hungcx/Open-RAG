@@ -57,6 +57,8 @@ class ChatService:
         previous_response_id: str = None,
         stream: bool = False,
         filter_id: str = None,
+        department: str = None,
+        role: str = None,
     ):
         """Handle Langflow chat requests"""
         if not prompt:
@@ -79,6 +81,10 @@ class ChatService:
         config = get_openrag_config()
         embedding_model = config.knowledge.embedding_model
         extra_headers["X-LANGFLOW-GLOBAL-VAR-SELECTED_EMBEDDING_MODEL"] = embedding_model
+        if department:
+            extra_headers["X-LANGFLOW-GLOBAL-VAR-DEPARTMENT"] = department
+        if role:
+            extra_headers["X-LANGFLOW-GLOBAL-VAR-ROLE"] = role
         
         # Add provider credentials to headers
         await add_provider_credentials_to_headers(extra_headers, config, flows_service=self.flows_service)

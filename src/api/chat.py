@@ -19,6 +19,8 @@ class ChatBody(BaseModel):
     limit: int = 10
     scoreThreshold: float = 0
     filter_id: Optional[str] = None
+    department: Optional[str] = None
+    role: Optional[str] = None
 
 
 async def chat_endpoint(
@@ -101,6 +103,8 @@ async def langflow_endpoint(
                     previous_response_id=body.previous_response_id,
                     stream=True,
                     filter_id=body.filter_id,
+                    department=body.department,
+                    role=body.role,
                 ),
                 media_type="text/event-stream",
                 headers={
@@ -118,6 +122,8 @@ async def langflow_endpoint(
                 previous_response_id=body.previous_response_id,
                 stream=False,
                 filter_id=body.filter_id,
+                department=body.department,
+                role=body.role,
             )
             return JSONResponse(result)
 
