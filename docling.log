@@ -1,0 +1,29 @@
+nohup: ignoring input
+Downloading opencv-python (69.5MiB)
+ Downloaded opencv-python
+Installed 243 packages in 14.48s
+warning: The package `docling==2.53.0` does not have an extra named `easyocr`
+Starting production server 🚀
+
+Server started at http://0.0.0.0:5001
+Documentation at http://0.0.0.0:5001/docs
+Scalar docs at http://0.0.0.0:5001/scalar
+
+Logs:
+INFO:     Started server process [138845]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:5001 (Press CTRL+C to quit)
+INFO:     172.18.0.3:47630 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.18.0.3:58600 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.18.0.3:52044 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.18.0.3:57070 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.18.0.3:58408 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.18.0.3:39716 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.18.0.3:59140 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.18.0.3:51888 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.18.0.3:53660 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.18.0.3:59840 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.18.0.3:59370 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.18.0.3:52126 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.18.0.3:57190 - "GET /health HTTP/1.1" 200 OK

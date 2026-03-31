@@ -118,7 +118,7 @@ class LangflowFileService:
 
         # Pass files via tweaks to File component (File-PSU37 from the flow)
         if file_paths:
-            tweaks["DoclingRemote-HgmE8"] = {"path": file_paths}
+            tweaks["DoclingRemote-Dp3PX"] = {"path": file_paths}
 
         # Pass metadata via tweaks to OpenSearch component
         metadata_tweaks = []
@@ -553,13 +553,9 @@ class LangflowFileService:
                 if settings.get("separator"):
                     final_tweaks["SplitText-QIKhg"]["separator"] = settings["separator"]
 
-            # OpenAI Embeddings component tweaks (OpenAIEmbeddings-joRJ6)
-            if settings.get("embeddingModel"):
-                if "OpenAIEmbeddings-joRJ6" not in final_tweaks:
-                    final_tweaks["OpenAIEmbeddings-joRJ6"] = {}
-                final_tweaks["OpenAIEmbeddings-joRJ6"]["model"] = settings[
-                    "embeddingModel"
-                ]
+            # Embedding model is handled via X-Langflow-Global-Var-SELECTED_EMBEDDING_MODEL header
+            # and SELECTED_EMBEDDING_MODEL global variable in the flow.
+            # No separate tweak for individual embedding components is needed.
 
             logger.debug(
                 "[LF] Final tweaks with settings applied",

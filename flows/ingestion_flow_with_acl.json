@@ -8,9 +8,9 @@
           "sourceHandle": {
             "dataType": "DoclingRemote",
             "id": "DoclingRemote-Dp3PX",
-            "name": "dataframe",
+            "name": "data",
             "output_types": [
-              "DataFrame"
+              "Data"
             ]
           },
           "targetHandle": {
@@ -23,10 +23,10 @@
             "type": "other"
           }
         },
-        "id": "xy-edge__DoclingRemote-Dp3PX{\u0153dataType\u0153:\u0153DoclingRemote\u0153,\u0153id\u0153:\u0153DoclingRemote-Dp3PX\u0153,\u0153name\u0153:\u0153dataframe\u0153,\u0153output_types\u0153:[\u0153DataFrame\u0153]}-ExportDoclingDocument-zZdRg{\u0153fieldName\u0153:\u0153data_inputs\u0153,\u0153id\u0153:\u0153ExportDoclingDocument-zZdRg\u0153,\u0153inputTypes\u0153:[\u0153Data\u0153,\u0153DataFrame\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "id": "xy-edge__DoclingRemote-Dp3PX{\u0153dataType\u0153:\u0153DoclingRemote\u0153,\u0153id\u0153:\u0153DoclingRemote-Dp3PX\u0153,\u0153name\u0153:\u0153data\u0153,\u0153output_types\u0153:[\u0153Data\u0153]}-ExportDoclingDocument-zZdRg{\u0153fieldName\u0153:\u0153data_inputs\u0153,\u0153id\u0153:\u0153ExportDoclingDocument-zZdRg\u0153,\u0153inputTypes\u0153:[\u0153Data\u0153,\u0153DataFrame\u0153],\u0153type\u0153:\u0153other\u0153}",
         "selected": false,
         "source": "DoclingRemote-Dp3PX",
-        "sourceHandle": "{\u0153dataType\u0153:\u0153DoclingRemote\u0153,\u0153id\u0153:\u0153DoclingRemote-Dp3PX\u0153,\u0153name\u0153:\u0153dataframe\u0153,\u0153output_types\u0153:[\u0153DataFrame\u0153]}",
+        "sourceHandle": "{\u0153dataType\u0153:\u0153DoclingRemote\u0153,\u0153id\u0153:\u0153DoclingRemote-Dp3PX\u0153,\u0153name\u0153:\u0153data\u0153,\u0153output_types\u0153:[\u0153Data\u0153]}",
         "target": "ExportDoclingDocument-zZdRg",
         "targetHandle": "{\u0153fieldName\u0153:\u0153data_inputs\u0153,\u0153id\u0153:\u0153ExportDoclingDocument-zZdRg\u0153,\u0153inputTypes\u0153:[\u0153Data\u0153,\u0153DataFrame\u0153],\u0153type\u0153:\u0153other\u0153}"
       },

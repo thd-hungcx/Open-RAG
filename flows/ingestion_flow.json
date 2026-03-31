@@ -8,9 +8,9 @@
           "sourceHandle": {
             "dataType": "DoclingRemote",
             "id": "DoclingRemote-Dp3PX",
-            "name": "dataframe",
+            "name": "data",
             "output_types": [
-              "DataFrame"
+              "Data"
             ]
           },
           "targetHandle": {
@@ -23,10 +23,10 @@
             "type": "other"
           }
         },
-        "id": "xy-edge__DoclingRemote-Dp3PX{œdataTypeœ:œDoclingRemoteœ,œidœ:œDoclingRemote-Dp3PXœ,œnameœ:œdataframeœ,œoutput_typesœ:[œDataFrameœ]}-ExportDoclingDocument-zZdRg{œfieldNameœ:œdata_inputsœ,œidœ:œExportDoclingDocument-zZdRgœ,œinputTypesœ:[œDataœ,œDataFrameœ],œtypeœ:œotherœ}",
+        "id": "xy-edge__DoclingRemote-Dp3PX{œdataTypeœ:œDoclingRemoteœ,œidœ:œDoclingRemote-Dp3PXœ,œnameœ:œdataœ,œoutput_typesœ:[œDataœ]}-ExportDoclingDocument-zZdRg{œfieldNameœ:œdata_inputsœ,œidœ:œExportDoclingDocument-zZdRgœ,œinputTypesœ:[œDataœ,œDataFrameœ],œtypeœ:œotherœ}",
         "selected": false,
         "source": "DoclingRemote-Dp3PX",
-        "sourceHandle": "{œdataTypeœ:œDoclingRemoteœ,œidœ:œDoclingRemote-Dp3PXœ,œnameœ:œdataframeœ,œoutput_typesœ:[œDataFrameœ]}",
+        "sourceHandle": "{œdataTypeœ:œDoclingRemoteœ,œidœ:œDoclingRemote-Dp3PXœ,œnameœ:œdataœ,œoutput_typesœ:[œDataœ]}",
         "target": "ExportDoclingDocument-zZdRg",
         "targetHandle": "{œfieldNameœ:œdata_inputsœ,œidœ:œExportDoclingDocument-zZdRgœ,œinputTypesœ:[œDataœ,œDataFrameœ],œtypeœ:œotherœ}"
       },
