@@ -542,7 +542,7 @@ class AppClients:
                 else:
                     http_client = httpx.AsyncClient(
                         http2=False,
-                        timeout=httpx.Timeout(60.0, connect=10.0)
+                        timeout=httpx.Timeout(300.0, connect=10.0)
                     )
                     self._patched_async_client = patch_openai_with_mcp(
                         AsyncOpenAI(http_client=http_client)

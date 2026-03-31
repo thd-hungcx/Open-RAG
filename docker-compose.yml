@@ -123,6 +123,8 @@ services:
       - openrag-backend
     environment:
       - OPENRAG_BACKEND_HOST=openrag-backend
+      - UNDICI_BODY_TIMEOUT=900000
+      - UNDICI_HEADERS_TIMEOUT=900000
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
 

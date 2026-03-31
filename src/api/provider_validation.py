@@ -660,7 +660,7 @@ async def _test_ollama_completion_with_tools(llm_model: str, endpoint: str) -> N
             response = await client.post(
                 url,
                 json=payload,
-                timeout=60.0,  # Increased timeout for Ollama when potentially busy
+                timeout=300.0,  # Increased timeout for Ollama when potentially busy
             )
 
             if response.status_code != 200:
@@ -693,7 +693,7 @@ async def _test_ollama_embedding(embedding_model: str, endpoint: str) -> None:
             response = await client.post(
                 url,
                 json=payload,
-                timeout=60.0,  # Increased timeout for Ollama when potentially busy
+                timeout=300.0,  # Increased timeout for Ollama when potentially busy
             )
 
             if response.status_code != 200:
