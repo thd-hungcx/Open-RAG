@@ -49,6 +49,10 @@ class ProvidersConfig:
     watsonx: WatsonXConfig
     ollama: OllamaConfig
 
+    def any_configured(self) -> bool:
+        """Return True if at least one provider is marked as configured."""
+        return any(p.configured for p in (self.openai, self.anthropic, self.watsonx, self.ollama))
+
     def get_provider_config(self, provider: str):
         """Get configuration for a specific provider."""
         provider_lower = provider.lower()
@@ -62,15 +66,6 @@ class ProvidersConfig:
             return self.ollama
         else:
             raise ValueError(f"Unknown provider: {provider}")
-
-    def any_configured(self) -> bool:
-        """Check if any provider is configured."""
-        return any([
-            self.openai.configured,
-            self.anthropic.configured,
-            self.watsonx.configured,
-            self.ollama.configured
-        ])
 
 
 @dataclass

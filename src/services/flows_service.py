@@ -1229,10 +1229,6 @@ class FlowsService:
 
     async def _enable_model_in_langflow(self, provider_name: str, model_value: str):
         """Ensure the specified model is enabled in Langflow."""
-        if not model_value:
-            logger.debug(f"Skipping model enable for provider {provider_name}: no model_id provided")
-            return
-
         try:
             enable_payload = [{
                 "provider": provider_name,

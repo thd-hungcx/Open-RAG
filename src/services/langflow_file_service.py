@@ -4,7 +4,7 @@ import httpx
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from config.settings import LANGFLOW_INGEST_FLOW_ID, LANGFLOW_URL_INGEST_FLOW_ID, DOCLING_SERVE_URL, clients
+from config.settings import LANGFLOW_INGEST_FLOW_ID, LANGFLOW_URL_INGEST_FLOW_ID, clients
 from utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -15,6 +15,44 @@ class LangflowFileService:
         self.flow_id_ingest = LANGFLOW_INGEST_FLOW_ID
         self.flows_service = flows_service
         self.flow_id_url_ingest = LANGFLOW_URL_INGEST_FLOW_ID
+
+    async def _resolve_docling_node_ids(self) -> list[str]:
+        fallback = ["DoclingRemote-Dp3PX"]
+        if not self.flow_id_ingest:
+            return fallback
+
+        try:
+            response = await clients.langflow_request("GET", f"/api/v1/flows/{self.flow_id_ingest}")
+            if response.status_code >= 400:
+                return fallback
+
+            flow = response.json()
+            nodes = (flow.get("data") or {}).get("nodes") or []
+            ids: list[str] = []
+
+            for node in nodes:
+                data = node.get("data") or {}
+                node_type = data.get("type")
+                if node_type != "DoclingRemote":
+                    continue
+
+                node_id = data.get("id") or node.get("id")
+                if node_id:
+                    ids.append(str(node_id))
+
+            return ids or fallback
+        except Exception:
+            return fallback
+
+    async def _attach_docling_file_paths(self, tweaks: Dict[str, Any], file_paths: List[str]) -> None:
+        if not file_paths:
+            return
+
+        docling_node_ids = await self._resolve_docling_node_ids()
+        for node_id in docling_node_ids:
+            tweaks[node_id] = {"path": file_paths}
+
+        logger.info("[LF] File path tweak targets %s", docling_node_ids)
 
     _TRANSIENT_STATUS_CODES = {408, 429, 500, 502, 503, 504}
 
@@ -112,12 +150,8 @@ class LangflowFileService:
         if not tweaks:
             tweaks = {}
 
-        # Pass files via tweaks to File component (File-PSU37 from the flow)
-        if file_paths:
-            tweaks["DoclingRemote-Dp3PX"] = {
-                "path": file_paths,
-                "api_url": DOCLING_SERVE_URL
-            }
+        # Pass files via tweaks to DoclingRemote component(s) from the current flow
+        await self._attach_docling_file_paths(tweaks, file_paths)
 
         # Pass metadata via tweaks to OpenSearch component
         metadata_tweaks = []
@@ -166,7 +200,7 @@ class LangflowFileService:
             "X-Langflow-Global-Var-OWNER_NAME": str(owner_name),
             "X-Langflow-Global-Var-OWNER_EMAIL": str(owner_email),
             "X-Langflow-Global-Var-CONNECTOR_TYPE": str(connector_type),
-            "X-Langflow-Global-Var-FILENAME": clean_connector_filename(filename, ""),
+            "X-Langflow-Global-Var-FILENAME": filename,
             "X-Langflow-Global-Var-MIMETYPE": mimetype,
             "X-Langflow-Global-Var-FILESIZE": str(file_size_bytes),
             "X-Langflow-Global-Var-SELECTED_EMBEDDING_MODEL": str(embedding_model),
@@ -186,7 +220,7 @@ class LangflowFileService:
             )
         
         # Add provider credentials as global variables for ingestion
-        await add_provider_credentials_to_headers(headers, config, flows_service=self.flows_service)
+        await add_provider_credentials_to_headers(headers, config, flows_service=self.flows_service, jwt_token=jwt_token)
         logger.info(f"[LF] Headers {headers}")
         logger.info(f"[LF] Payload {payload}")
         resp = await clients.langflow_request(
@@ -299,7 +333,7 @@ class LangflowFileService:
             "X-Langflow-Global-Var-ALLOWED_USERS": json.dumps( []),
             "X-Langflow-Global-Var-ALLOWED_GROUPS": json.dumps( []),
         }
-        await add_provider_credentials_to_headers(headers, config, flows_service=self.flows_service)
+        await add_provider_credentials_to_headers(headers, config, flows_service=self.flows_service, jwt_token=jwt_token)
 
 
         logger.info(

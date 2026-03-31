@@ -2,7 +2,6 @@
 
 import os
 import tempfile
-import unicodedata
 from contextlib import contextmanager
 from typing import Optional
 
@@ -92,23 +91,39 @@ def clean_connector_filename(filename: str, mimetype: str) -> str:
     If the MIME type is unknown, the original filename (and its extension) is kept as-is
     rather than appending a meaningless .bin suffix.
     """
-    # Normalize unicode characters and remove accents (e.g., Nguyễn -> Nguyen)
-    clean_name = (
-        unicodedata.normalize("NFKD", filename)
-        .encode("ascii", "ignore")
-        .decode("ascii")
-    )
-    
-    # Replace spaces and slashes with underscores
-    clean_name = clean_name.replace(" ", "_").replace("/", "_")
-    
-    # Remove any other potentially problematic characters
-    clean_name = "".join(c for c in clean_name if c.isalnum() or c in "._-")
-
+    clean_name = filename.replace(" ", "_").replace("/", "_")
     suffix = get_file_extension(mimetype)
     if suffix is None:
         # Unknown type — keep whatever extension the file already has
         return clean_name
     if not clean_name.lower().endswith(suffix.lower()):
         return clean_name + suffix
-    return clean_name
+    return clean_name
+
+
+def get_filename_aliases(filename: str) -> list[str]:
+    """Return equivalent filename variants used by ingestion/indexing.
+
+    Legacy Langflow ingest indexes `.txt` uploads as `.md` (see
+    `LangflowFileProcessor`). The alias always uses a lowercase extension
+    to match the rename behavior:
+      `original_filename[:-4] + ".md"`
+    So `"FOO.TXT"` aliases to `"FOO.md"`, not `"FOO.MD"`.
+
+    This helper keeps duplicate detection/deletion consistent by checking
+    both `.txt` and `.md` forms.
+    """
+    normalized = (filename or "").strip()
+    if not normalized:
+        return []
+
+    aliases = [normalized]
+    lower_name = normalized.lower()
+
+    if lower_name.endswith(".txt"):
+        aliases.append(normalized[:-4] + ".md")
+    elif lower_name.endswith(".md"):
+        aliases.append(normalized[:-3] + ".txt")
+
+    # Keep order stable while removing duplicates.
+    return list(dict.fromkeys(aliases))
