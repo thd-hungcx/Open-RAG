@@ -784,8 +784,11 @@ class AppClients:
             )
 
     def create_user_opensearch_client(self, jwt_token: str):
-        """Create OpenSearch client with user's JWT token for OIDC auth"""
-        headers = {"Authorization": f"Bearer {jwt_token}"}
+        """Create OpenSearch client with basic auth (non-IBM) or JWT Bearer (IBM mode)."""
+        if IBM_AUTH_ENABLED:
+            extra = {"headers": {"Authorization": f"Bearer {jwt_token}"}}
+        else:
+            extra = {"http_auth": (OPENSEARCH_USERNAME, OPENSEARCH_PASSWORD)}
 
         return AsyncOpenSearch(
             hosts=[{"host": OPENSEARCH_HOST, "port": OPENSEARCH_PORT}],
@@ -794,11 +797,11 @@ class AppClients:
             use_ssl=True,
             verify_certs=False,
             ssl_assert_fingerprint=None,
-            headers=headers,
             http_compress=True,
-            timeout=30,  # 30 second timeout
+            timeout=30,
             max_retries=3,
             retry_on_timeout=True,
+            **extra,
         )
 
 
