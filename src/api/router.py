@@ -22,6 +22,12 @@ from utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 
+def _parse_bool_form(value, default: bool = False) -> bool:
+    if value is None:
+        return default
+    return str(value).strip().lower() in {"true", "1", "yes", "on"}
+
+
 async def upload_ingest_router(
     file: List[UploadFile] = File(...),
     session_id: Optional[str] = Form(None),

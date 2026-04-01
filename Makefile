@@ -6,8 +6,8 @@ ENV_FILE ?= .env
 ifneq (,$(wildcard $(ENV_FILE)))
   include $(ENV_FILE)
   export $(shell sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p' $(ENV_FILE))
-  # Strip single quotes from all exported variables
-  $(foreach var,$(shell sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p' $(ENV_FILE)),$(eval $(var):=$(shell echo $($(var)) | sed "s/^'//;s/'$$//")))
+  # Strip single and double quotes from all exported variables
+  $(foreach var,$(shell sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p' $(ENV_FILE)),$(eval $(var):=$(shell echo $($(var)) | sed "s/^['\"]//;s/['\"]$$//")))
 endif
 
 hostname ?= 0.0.0.0
@@ -49,7 +49,7 @@ define test_jwt_opensearch
 	TEST_TOKEN=$$(uv run python -c 'from utils.logging_config import configure_logging; configure_logging(log_level="CRITICAL"); \
 	    from src.session_manager import SessionManager, AnonymousUser; \
 	    sm = SessionManager("test"); \
-	    print(sm.create_jwt_token(AnonymousUser()))' 2>/dev/null); \
+	    print(sm.create_jwt_token(AnonymousUser()).removeprefix("Bearer "))' 2>/dev/null); \
 	if [ -z "$$TEST_TOKEN" ]; then \
 	    echo "$(RED)Failed to generate JWT token$(NC)"; \
 	    exit 1; \
@@ -322,6 +322,7 @@ help_utils: ## Show utility commands
 
 ensure-langflow-data: ## Create the langflow-data directory if it does not exist
 	@mkdir -p langflow-data
+	@chmod 777 langflow-data
 
 dev: ensure-langflow-data ## Start full stack with GPU support
 	@echo "$(YELLOW)Starting OpenRAG with GPU support...$(NC)"
@@ -521,7 +522,7 @@ factory-reset: ## Complete reset (stop, remove volumes, clear data, remove image
 	fi; \
 	echo ""; \
 	echo "$(YELLOW)Stopping all services and removing volumes...$(NC)"; \
-	$(COMPOSE_CMD) down -v --remove-orphans --rmi local || true; \
+	$(COMPOSE_CMD) down -v --remove-orphans || true; \
 	echo "$(YELLOW)Removing local data directories...$(NC)"; \
 	if [ -d "opensearch-data" ]; then \
 		echo "Removing opensearch-data..."; \
@@ -981,10 +982,27 @@ status: ## Show container status
 	@$(COMPOSE_CMD) ps 2>/dev/null || echo "$(YELLOW)No containers running$(NC)"
 
 health: ## Check health of all services
-	@echo "$(PURPLE)Health check:$(NC)"
-	@echo "$(CYAN)Backend:$(NC)    $$(curl -s http://localhost:8000/health 2>/dev/null || echo '$(RED)Not responding$(NC)')"
-	@echo "$(CYAN)Langflow:$(NC)   $$(curl -s http://localhost:7860/health 2>/dev/null || echo '$(RED)Not responding$(NC)')"
-	@echo "$(CYAN)OpenSearch:$(NC) $$(curl -s -k -u admin:$${OPENSEARCH_PASSWORD} https://localhost:9200 2>/dev/null | jq -r .tagline 2>/dev/null || echo '$(RED)Not responding$(NC)')"
+	@printf "$(PURPLE)Health check:$(NC)\n"
+	@printf "$(CYAN)Frontend:$(NC)   "
+	@if curl -s -k --fail http://127.0.0.1:$${FRONTEND_PORT:-3000}/ >/dev/null 2>&1; then printf "$(GREEN)Healthy$(NC)\n"; else printf "$(RED)Not responding$(NC)\n"; fi
+	@printf "$(CYAN)Backend:$(NC)    "
+	@if curl -s -k --fail http://127.0.0.1:8000/health >/dev/null 2>&1; then printf "$(GREEN)Healthy$(NC)\n"; else printf "$(RED)Not responding$(NC)\n"; fi
+	@printf "$(CYAN)Langflow:$(NC)   "
+	@if curl -s -k --fail http://127.0.0.1:$${LANGFLOW_PORT:-7860}/health >/dev/null 2>&1; then printf "$(GREEN)Healthy$(NC)\n"; else printf "$(RED)Not responding$(NC)\n"; fi
+	@printf "$(CYAN)OpenSearch:$(NC) "
+	@RESULTS=$$(curl -s -k -u "admin:$$OPENSEARCH_PASSWORD" https://127.0.0.1:9200/_cluster/health 2>/dev/null); \
+	if [ -z "$$RESULTS" ]; then \
+		printf "$(RED)Not responding$(NC)\n"; \
+	else \
+		STATUS=$$(echo "$$RESULTS" | python3 -c 'import sys, json; print(json.load(sys.stdin).get("status", "unknown"))' 2>/dev/null || echo "unknown"); \
+		if [ "$$STATUS" = "green" ]; then printf "$(GREEN)$$STATUS$(NC)\n"; \
+		elif [ "$$STATUS" = "yellow" ]; then printf "$(YELLOW)$$STATUS$(NC)\n"; \
+		elif [ "$$STATUS" = "red" ]; then printf "$(RED)$$STATUS$(NC)\n"; \
+		elif [ "$$STATUS" = "unknown" ]; then printf "$(RED)Invalid Response (Check Credentials)$(NC)\n"; \
+		else printf "$(YELLOW)%s$(NC)\n" "$$STATUS"; fi; \
+	fi
+	@printf "$(CYAN)Docling:$(NC)    "
+	@if curl -s -k --fail http://127.0.0.1:5001/health >/dev/null 2>&1; then printf "$(GREEN)Healthy$(NC)\n"; else printf "$(RED)Not responding$(NC)\n"; fi
 
 ######################
 # DATABASE OPERATIONS
