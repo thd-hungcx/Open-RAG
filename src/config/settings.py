@@ -101,6 +101,7 @@ def is_no_auth_mode():
 WEBHOOK_BASE_URL = os.getenv(
     "WEBHOOK_BASE_URL"
 )  # No default - must be explicitly configured
+OAUTH_BROKER_URL = os.getenv("OAUTH_BROKER_URL")
 
 # OpenSearch configuration
 VECTOR_DIM = 1536
