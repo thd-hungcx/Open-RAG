@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from .tasks import UploadTask, FileTask
 from utils.logging_config import get_logger
 from utils.file_utils import (
@@ -731,6 +731,9 @@ class LangflowFileProcessor(TaskProcessor):
         delete_after_ingest: bool = True,
         replace_duplicates: bool = False,
         connector_type: str = "local",
+        shared: bool = False,
+        is_confidential: bool = False,
+        department: Optional[str] = None,
     ):
         super().__init__()
         self.langflow_file_service = langflow_file_service
@@ -745,6 +748,9 @@ class LangflowFileProcessor(TaskProcessor):
         self.delete_after_ingest = delete_after_ingest
         self.replace_duplicates = replace_duplicates
         self.connector_type = connector_type
+        self.shared = shared
+        self.is_confidential = is_confidential
+        self.department = department
 
     async def process_item(
         self, upload_task: UploadTask, item: str, file_task: FileTask
@@ -831,6 +837,9 @@ class LangflowFileProcessor(TaskProcessor):
                 owner_name=self.owner_name,
                 owner_email=self.owner_email,
                 connector_type=self.connector_type,
+                shared=self.shared,
+                is_confidential=self.is_confidential,
+                department=self.department,
             )
 
             # Update task with success

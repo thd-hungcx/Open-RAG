@@ -133,6 +133,9 @@ class LangflowFileService:
         source_url: Optional[str] = None,
         allowed_users: Optional[List[str]] = None,
         allowed_groups: Optional[List[str]] = None,
+        shared: bool = False,
+        is_confidential: bool = False,
+        department: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Trigger the ingestion flow with provided file paths.
@@ -206,6 +209,9 @@ class LangflowFileService:
             "X-Langflow-Global-Var-SELECTED_EMBEDDING_MODEL": str(embedding_model),
             "X-Langflow-Global-Var-DOCUMENT_ID": str(document_id) if document_id else "",
             "X-Langflow-Global-Var-SOURCE_URL": str(source_url) if source_url else "",
+            "X-Langflow-Global-Var-SHARED": str(shared).lower(),
+            "X-Langflow-Global-Var-IS_CONFIDENTIAL": str(is_confidential).lower(),
+            "X-Langflow-Global-Var-DEPARTMENT": str(department) if department else "",
         }
 
         # Serialize ACL lists as JSON strings for Langflow global vars
@@ -511,7 +517,10 @@ class LangflowFileService:
         owner: Optional[str] = None,
         owner_name: Optional[str] = None,
         owner_email: Optional[str] = None,
-        connector_type: Optional[str] = None,   
+        connector_type: Optional[str] = None,
+        shared: bool = False,
+        is_confidential: bool = False,
+        department: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Combined upload, ingest, and delete operation.
@@ -603,6 +612,9 @@ class LangflowFileService:
                 owner_name=owner_name,
                 owner_email=owner_email,
                 connector_type=connector_type,
+                shared=shared,
+                is_confidential=is_confidential,
+                department=department,
             )
             logger.debug("[LF] Ingestion completed successfully")
         except Exception as e:

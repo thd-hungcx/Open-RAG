@@ -22,6 +22,12 @@ from utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 
+def _parse_bool_form(value: Optional[str], default: bool = False) -> bool:
+    if value is None:
+        return default
+    return value.strip().lower() in {"true", "1", "yes", "on"}
+
+
 async def upload_ingest_router(
     file: List[UploadFile] = File(...),
     session_id: Optional[str] = Form(None),
@@ -30,6 +36,9 @@ async def upload_ingest_router(
     delete_after_ingest: str = Form("true"),
     replace_duplicates: str = Form("true"),
     create_filter: str = Form("false"),
+    shared: str = Form("false"),
+    is_confidential: str = Form("false"),
+    department: Optional[str] = Form(None),
     document_service=Depends(get_document_service),
     langflow_file_service=Depends(get_langflow_file_service),
     session_manager=Depends(get_session_manager),
@@ -67,6 +76,9 @@ async def upload_ingest_router(
         delete_after_ingest=delete_after_ingest.lower() == "true",
         replace_duplicates=replace_duplicates.lower() == "true",
         create_filter=create_filter.lower() == "true",
+        shared=_parse_bool_form(shared),
+        is_confidential=_parse_bool_form(is_confidential),
+        department=department,
         langflow_file_service=langflow_file_service,
         session_manager=session_manager,
         task_service=task_service,
@@ -82,6 +94,9 @@ async def _langflow_upload_ingest_task(
     delete_after_ingest: bool,
     replace_duplicates: bool,
     create_filter: bool,
+    shared: bool,
+    is_confidential: bool,
+    department: Optional[str],
     langflow_file_service,
     session_manager,
     task_service,
@@ -143,6 +158,9 @@ async def _langflow_upload_ingest_task(
                 settings=settings,
                 delete_after_ingest=delete_after_ingest,
                 replace_duplicates=replace_duplicates,
+                shared=shared,
+                is_confidential=is_confidential,
+                department=department,
             )
 
             return JSONResponse(
