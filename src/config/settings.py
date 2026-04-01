@@ -3,7 +3,6 @@ import os
 from utils.env_utils import get_env_int, get_env_float
 
 import httpx
-from agentd.patch import patch_openai_with_mcp
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 from opensearchpy import AsyncOpenSearch
