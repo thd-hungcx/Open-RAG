@@ -88,19 +88,17 @@ def _fill_doc(doc, fields: dict[str, str]):
 # Tool 1: contract_list_files
 # ---------------------------------------------------------------------------
 
+async def handle_list_files(_: dict) -> list[TextContent]:
+    files = "\n".join(f.name for f in _OUTPUT_DIR.glob("*.docx"))
+    return [TextContent(type="text", text=files or "No .docx files found.")]
+
 register_tool(
     Tool(
         name="contract_list_files",
         description="List all .docx contract template files available in openrag-documents/.",
         inputSchema={"type": "object", "properties": {}},
     ),
-    lambda _: [TextContent(
-        type="text",
-        text=(
-            "\n".join(f.name for f in _OUTPUT_DIR.glob("*.docx"))
-            or "No .docx files found. Please upload a .docx contract template first."
-        ),
-    )],
+    handle_list_files,
 )
 
 
@@ -141,9 +139,9 @@ register_tool(
     Tool(
         name="contract_read_template",
         description=(
-            "Read a .docx contract template and return its full text content "
-            "plus a list of {{field}} placeholders (or blank lines) that need to be filled. "
-            "Only .docx files are supported."
+            "Read a LOCAL .docx contract template from openrag-documents/ folder and return its text + {{field}} placeholders. "
+            "Only use this for files physically stored in openrag-documents/. "
+            "If the user uploaded a contract to the knowledge base (via OpenRAG UI), use contract_read_from_knowledge instead."
         ),
         inputSchema={
             "type": "object",
