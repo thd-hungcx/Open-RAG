@@ -57,6 +57,8 @@ class ChatService:
         previous_response_id: str = None,
         stream: bool = False,
         filter_id: str = None,
+        role: str | None = None,
+        department: str | None = None,
     ):
         """Handle Langflow chat requests"""
         if not prompt:
@@ -120,6 +122,14 @@ class ChatService:
 
             if filter_clauses:
                 filter_expression["filter"] = filter_clauses
+
+        # Add RBAC context for OpenSearch node policy
+        if role:
+            filter_expression["role"] = role
+            extra_headers["X-LANGFLOW-GLOBAL-VAR-ROLE"] = role
+        if department:
+            filter_expression["department"] = department
+            extra_headers["X-LANGFLOW-GLOBAL-VAR-DEPARTMENT"] = department
 
         # Add limit and score threshold to the filter expression (only if different from defaults)
         if limit and limit != 10:  # 10 is the default limit

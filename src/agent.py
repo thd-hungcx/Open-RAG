@@ -124,9 +124,18 @@ async def async_response_stream(
         if previous_response_id is not None:
             request_params["previous_response_id"] = previous_response_id
 
-        if "x-api-key" not in client.default_headers:
-            if hasattr(client, "api_key") and extra_headers is not None:
-                extra_headers["x-api-key"] = client.api_key
+        from config.settings import LANGFLOW_URL, get_langflow_api_key
+
+        if extra_headers is None:
+            extra_headers = {}
+
+        is_langflow_client = str(getattr(client, "base_url", "")).startswith(f"{LANGFLOW_URL}/api/v1")
+        if is_langflow_client:
+            langflow_key = await get_langflow_api_key(force_regenerate=True)
+            if langflow_key:
+                extra_headers["x-api-key"] = langflow_key
+        elif "x-api-key" not in client.default_headers and hasattr(client, "api_key"):
+            extra_headers["x-api-key"] = client.api_key
 
         if extra_headers:
             request_params["extra_headers"] = extra_headers
@@ -289,9 +298,21 @@ async def async_response(
         if extra_headers:
             request_params["extra_headers"] = extra_headers
 
-        if "x-api-key" not in client.default_headers:
-            if hasattr(client, "api_key") and extra_headers is not None:
-                extra_headers["x-api-key"] = client.api_key
+        from config.settings import LANGFLOW_URL, get_langflow_api_key
+
+        if extra_headers is None:
+            extra_headers = {}
+
+        is_langflow_client = str(getattr(client, "base_url", "")).startswith(f"{LANGFLOW_URL}/api/v1")
+        if is_langflow_client:
+            langflow_key = await get_langflow_api_key(force_regenerate=True)
+            if langflow_key:
+                extra_headers["x-api-key"] = langflow_key
+        elif "x-api-key" not in client.default_headers and hasattr(client, "api_key"):
+            extra_headers["x-api-key"] = client.api_key
+
+        if extra_headers:
+            request_params["extra_headers"] = extra_headers
 
         response = await client.responses.create(**request_params)
 
