@@ -3,7 +3,7 @@ import os
 import random
 import time
 import uuid
-from typing import Any, Coroutine, Optional, TypeVar
+from typing import Any, Coroutine, TypeVar
 
 from models.tasks import FileTask, TaskStatus, UploadTask
 from session_manager import AnonymousUser
@@ -137,16 +137,13 @@ class TaskService:
         settings: dict = None,
         delete_after_ingest: bool = True,
         replace_duplicates: bool = False,
-        connector_type: str = "local",
-        shared: bool = False,
-        is_confidential: bool = False,
-        department: Optional[str] = None,
-        existing_task_id: str = None,
+        custom_metadata: dict = None,
     ) -> str:
         """Create a new upload task for Langflow file processing with upload and ingest"""
         # Use LangflowFileProcessor with user context
         from models.processors import LangflowFileProcessor
 
+        meta = custom_metadata or {}
         processor = LangflowFileProcessor(
             langflow_file_service=langflow_file_service,
             session_manager=session_manager,
@@ -159,12 +156,12 @@ class TaskService:
             settings=settings,
             delete_after_ingest=delete_after_ingest,
             replace_duplicates=replace_duplicates,
-            connector_type=connector_type,
-            shared=shared,
-            is_confidential=is_confidential,
-            department=department,
+            department=meta.get("department"),
+            role=meta.get("role"),
+            shared=meta.get("shared", False),
+            is_confidential=meta.get("is_confidential", False),
         )
-        return await self.create_custom_task(user_id, file_paths, processor, original_filenames, existing_task_id=existing_task_id)
+        return await self.create_custom_task(user_id, file_paths, processor, original_filenames)
 
     async def create_langflow_url_upload_task(
         self,
@@ -179,7 +176,6 @@ class TaskService:
         connector_type: str = "openrag_docs",
         prevent_outside: bool = True,
         tweaks: dict = None,
-        existing_task_id: str = None,
     ) -> str:
         """Create a new upload task for Langflow URL ingestion."""
         from models.url import LangflowUrlProcessor
@@ -197,14 +193,14 @@ class TaskService:
             prevent_outside=prevent_outside,
             tweaks=tweaks,
         )
-        return await self.create_custom_task(owner_user_id, [docs_url], processor, existing_task_id=existing_task_id)
+        return await self.create_custom_task(owner_user_id, [docs_url], processor)
 
-    async def create_custom_task(self, user_id: str, items: list, processor, original_filenames: dict | None = None, existing_task_id: str = None) -> str:
+    async def create_custom_task(self, user_id: str, items: list, processor, original_filenames: dict | None = None) -> str:
         """Create a new task with custom processor for any type of items"""
         import os
         # Store anonymous tasks under a stable key so they can be retrieved later
         store_user_id = user_id or AnonymousUser().user_id
-        task_id = existing_task_id or str(uuid.uuid4())
+        task_id = str(uuid.uuid4())
 
         # Create file tasks with original filenames if provided
         normalized_originals = (
@@ -220,32 +216,28 @@ class TaskService:
             for item in items
         }
 
-        if existing_task_id and store_user_id in self.task_store and existing_task_id in self.task_store[store_user_id]:
-            upload_task = self.task_store[store_user_id][existing_task_id]
-            upload_task.file_tasks.update(file_tasks)
-            upload_task.total_files += len(items)
-            upload_task.status = TaskStatus.RUNNING
-        else:
-            upload_task = UploadTask(
-                task_id=task_id,
-                total_files=len(items),
-                file_tasks=file_tasks,
-            )
-            upload_task.processor = processor
-            if store_user_id not in self.task_store:
-                self.task_store[store_user_id] = {}
-            self.task_store[store_user_id][task_id] = upload_task
+        upload_task = UploadTask(
+            task_id=task_id,
+            total_files=len(items),
+            file_tasks=file_tasks,
+        )
+
+        # Attach the custom processor to the task
+        upload_task.processor = processor
+
+        if store_user_id not in self.task_store:
+            self.task_store[store_user_id] = {}
+        self.task_store[store_user_id][task_id] = upload_task
 
         # Start background processing
         background_task = asyncio.create_task(
-            self.background_custom_processor(store_user_id, task_id, items, processor)
+            self.background_custom_processor(store_user_id, task_id, items)
         )
         self.background_tasks.add(background_task)
         background_task.add_done_callback(self.background_tasks.discard)
 
-        # Store reference to background task for cancellation if newly created
-        if not existing_task_id:
-            upload_task.background_task = background_task
+        # Store reference to background task for cancellation
+        upload_task.background_task = background_task
 
         # Send telemetry event for task creation with metadata
         asyncio.create_task(
@@ -296,7 +288,7 @@ class TaskService:
         return f"{hours}h {mins}m {secs}s"
 
     async def background_custom_processor(
-        self, user_id: str, task_id: str, items: list, processor=None
+        self, user_id: str, task_id: str, items: list
     ) -> None:
         """Background task to process items using custom processor"""
         try:
@@ -304,7 +296,7 @@ class TaskService:
             upload_task.status = TaskStatus.RUNNING
             upload_task.updated_at = time.time()
 
-            processor = processor or upload_task.processor
+            processor = upload_task.processor
 
             logger.info(
                 "Upload / ingestion task started",
@@ -415,10 +407,9 @@ class TaskService:
 
             await asyncio.gather(*tasks, return_exceptions=True)
 
-            # Mark task as completed if all files (including appended ones) are done
-            if upload_task.processed_files >= upload_task.total_files:
-                upload_task.status = TaskStatus.COMPLETED
-                upload_task.updated_at = time.time()
+            # Mark task as completed
+            upload_task.status = TaskStatus.COMPLETED
+            upload_task.updated_at = time.time()
 
             status: str = "FAILED"
 

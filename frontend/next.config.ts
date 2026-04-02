@@ -24,7 +24,7 @@ function getAllowedDevOrigins(): string[] {
 const nextConfig: NextConfig = {
   // Increase timeout for API routes
   experimental: {
-    proxyTimeout: 300000, // 5 minutes
+    proxyTimeout: 900000, // 15 minutes
   },
   // Ignore ESLint errors during build
   eslint: {

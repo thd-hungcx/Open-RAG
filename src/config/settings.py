@@ -21,11 +21,8 @@ logger = get_logger(__name__)
 # Environment variables
 OPENSEARCH_HOST = os.getenv("OPENSEARCH_HOST", "localhost")
 OPENSEARCH_PORT = get_env_int("OPENSEARCH_PORT", 9200)
-
-# Optional: Langflow-specific OpenSearch endpoint
-LANGFLOW_OPENSEARCH_HOST = os.getenv("LANGFLOW_OPENSEARCH_HOST", OPENSEARCH_HOST)
-LANGFLOW_OPENSEARCH_PORT = get_env_int("LANGFLOW_OPENSEARCH_PORT", OPENSEARCH_PORT)
-
+LANGFLOW_OPENSEARCH_HOST = os.getenv("LANGFLOW_OPENSEARCH_HOST", os.getenv("OPENSEARCH_HOST", "localhost"))
+LANGFLOW_OPENSEARCH_PORT = get_env_int("LANGFLOW_OPENSEARCH_PORT", get_env_int("OPENSEARCH_PORT", 9200))
 OPENSEARCH_USERNAME = os.getenv("OPENSEARCH_USERNAME", "admin")
 OPENSEARCH_PASSWORD = os.getenv("OPENSEARCH_PASSWORD")
 LANGFLOW_URL = os.getenv("LANGFLOW_URL", "http://localhost:7860")
@@ -53,12 +50,6 @@ LANGFLOW_KEY = os.getenv("LANGFLOW_KEY")
 SESSION_SECRET = os.getenv("SESSION_SECRET", "your-secret-key-change-in-production")
 GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
 GOOGLE_OAUTH_CLIENT_SECRET = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")
-
-# IBM AMS authentication (Watsonx Data embedded mode)
-IBM_AUTH_ENABLED = os.getenv("IBM_AUTH_ENABLED", "false").lower() in ("true", "1", "yes")
-IBM_JWT_PUBLIC_KEY_URL = os.getenv("IBM_JWT_PUBLIC_KEY_URL", "")
-IBM_SESSION_COOKIE_NAME = os.getenv("IBM_SESSION_COOKIE_NAME", "ibm-openrag-session")
-IBM_CREDENTIALS_HEADER = os.getenv("IBM_CREDENTIALS_HEADER", "X-IBM-LH-Credentials")
 DOCLING_OCR_ENGINE = os.getenv("DOCLING_OCR_ENGINE")
 
 IBM_AUTH_ENABLED = os.getenv("IBM_AUTH_ENABLED", "false").lower() in ("true", "1", "yes")
@@ -104,8 +95,6 @@ INGESTION_TIMEOUT = get_env_int("INGESTION_TIMEOUT", 3600)
 
 def is_no_auth_mode():
     """Check if we're running in no-auth mode (OAuth credentials missing)"""
-    if IBM_AUTH_ENABLED:
-        return False  # IBM cookie auth is a valid auth mode
     result = not (GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET)
     return result
 
@@ -114,10 +103,6 @@ def is_no_auth_mode():
 WEBHOOK_BASE_URL = os.getenv(
     "WEBHOOK_BASE_URL"
 )  # No default - must be explicitly configured
-
-# OAuth callback broker URL -- when set, Google (and other providers) redirect
-# here instead of directly to the frontend.  The broker then forwards to the
-# actual frontend origin that is carried in the OAuth state parameter.
 OAUTH_BROKER_URL = os.getenv("OAUTH_BROKER_URL")
 
 # OpenSearch configuration
@@ -341,8 +326,7 @@ class AppClients:
         self.docling_http_client = None
 
     async def initialize(self):
-        os_auth = None if IBM_AUTH_ENABLED else (OPENSEARCH_USERNAME, OPENSEARCH_PASSWORD)
-
+        # Initialize OpenSearch client
         self.opensearch = AsyncOpenSearch(
             hosts=[{"host": OPENSEARCH_HOST, "port": OPENSEARCH_PORT}],
             connection_class=AIOHttpConnection,
@@ -350,7 +334,7 @@ class AppClients:
             use_ssl=True,
             verify_certs=False,
             ssl_assert_fingerprint=None,
-            http_auth=os_auth,
+            http_auth=(OPENSEARCH_USERNAME, OPENSEARCH_PASSWORD),
             http_compress=True,
         )
 
@@ -404,7 +388,7 @@ class AppClients:
         # Initialize Langflow client with generated/provided API key
         if LANGFLOW_KEY and self.langflow_client is None:
             try:
-                if not OPENSEARCH_PASSWORD and not IBM_AUTH_ENABLED:
+                if not OPENSEARCH_PASSWORD:
                     raise ValueError("OPENSEARCH_PASSWORD is not set")
                 else:
                     await self.ensure_langflow_client()
@@ -555,14 +539,16 @@ class AppClients:
                     use_http2 = future.result(timeout=15)
 
                 if use_http2:
-                    self._patched_async_client = AsyncOpenAI()
+                    self._patched_async_client = patch_openai_with_mcp(AsyncOpenAI())
                     logger.info("OpenAI client initialized with HTTP/2")
                 else:
                     http_client = httpx.AsyncClient(
                         http2=False,
-                        timeout=httpx.Timeout(60.0, connect=10.0)
+                        timeout=httpx.Timeout(300.0, connect=10.0)
                     )
-                    self._patched_async_client = AsyncOpenAI(http_client=http_client)
+                    self._patched_async_client = patch_openai_with_mcp(
+                        AsyncOpenAI(http_client=http_client)
+                    )
                     logger.info("OpenAI client initialized with HTTP/1.1 (fallback)")
                 logger.info("Successfully initialized OpenAI client")
             except Exception as e:
@@ -643,10 +629,6 @@ class AppClients:
                 logger.error("Failed to close Langflow client", error=str(e))
             finally:
                 self.langflow_client = None
-
-    async def close(self):
-        """Alias for cleanup() for convenience."""
-        await self.cleanup()
 
     async def langflow_request(self, method: str, endpoint: str, **kwargs):
         """Central method for all Langflow API requests.
@@ -802,18 +784,11 @@ class AppClients:
             )
 
     def create_user_opensearch_client(self, jwt_token: str):
-        """Create OpenSearch client with user's auth token.
-
-        If jwt_token already contains an auth scheme (e.g. "Basic ..." or "Bearer ..."),
-        it is used verbatim. Otherwise it is wrapped as a Bearer token.
-        """
-        headers = {}
-        if isinstance(jwt_token, str) and jwt_token:
-            if jwt_token.startswith(("Basic ", "Bearer ")):
-                auth_header = jwt_token
-            else:
-                auth_header = f"Bearer {jwt_token}"
-            headers["Authorization"] = auth_header
+        """Create OpenSearch client with basic auth (non-IBM) or JWT Bearer (IBM mode)."""
+        if IBM_AUTH_ENABLED:
+            extra = {"headers": {"Authorization": f"Bearer {jwt_token}"}}
+        else:
+            extra = {"http_auth": (OPENSEARCH_USERNAME, OPENSEARCH_PASSWORD)}
 
         return AsyncOpenSearch(
             hosts=[{"host": OPENSEARCH_HOST, "port": OPENSEARCH_PORT}],
@@ -822,11 +797,11 @@ class AppClients:
             use_ssl=True,
             verify_certs=False,
             ssl_assert_fingerprint=None,
-            headers=headers,
             http_compress=True,
-            timeout=30,  # 30 second timeout
+            timeout=30,
             max_retries=3,
             retry_on_timeout=True,
+            **extra,
         )
 
 

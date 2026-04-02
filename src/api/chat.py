@@ -81,6 +81,10 @@ async def langflow_endpoint(
     user: User = Depends(get_current_user),
 ):
     """Handle Langflow chat requests"""
+    import time
+    t0 = time.time()
+    logger.info(f"[DEBUG] langflow_endpoint START user={user.user_id} stream={body.stream} prompt_len={len(body.prompt)}")
+
     if not body.prompt:
         return JSONResponse({"error": "Prompt is required"}, status_code=400)
 
@@ -103,6 +107,32 @@ async def langflow_endpoint(
 
     try:
         if body.stream:
+            logger.info(f"[DEBUG] Calling langflow_chat(stream=True) elapsed={time.time()-t0:.2f}s")
+            stream_gen = await chat_service.langflow_chat(
+                body.prompt,
+                user.user_id,
+                jwt_token,
+                previous_response_id=body.previous_response_id,
+                stream=True,
+                filter_id=body.filter_id,
+                department=body.department,
+                role=body.role,
+            )
+            logger.info(f"[DEBUG] Got stream_gen, returning StreamingResponse elapsed={time.time()-t0:.2f}s")
+
+            async def logged_stream():
+                chunk_count = 0
+                try:
+                    async for chunk in stream_gen:
+                        chunk_count += 1
+                        if chunk_count <= 3 or chunk_count % 20 == 0:
+                            logger.info(f"[DEBUG] stream chunk #{chunk_count} size={len(chunk) if chunk else 0}")
+                        yield chunk
+                    logger.info(f"[DEBUG] stream DONE total_chunks={chunk_count} elapsed={time.time()-t0:.2f}s")
+                except Exception as e:
+                    logger.error(f"[DEBUG] stream ERROR at chunk #{chunk_count}: {e} elapsed={time.time()-t0:.2f}s")
+                    raise
+
             return StreamingResponse(
                 await chat_service.langflow_chat(
                     body.prompt,
@@ -123,6 +153,7 @@ async def langflow_endpoint(
                 },
             )
         else:
+            logger.info(f"[DEBUG] Calling langflow_chat(stream=False) elapsed={time.time()-t0:.2f}s")
             result = await chat_service.langflow_chat(
                 body.prompt,
                 user.user_id,
@@ -133,12 +164,13 @@ async def langflow_endpoint(
                 role=body.role,
                 department=body.department,
             )
+            logger.info(f"[DEBUG] langflow_chat done elapsed={time.time()-t0:.2f}s")
             return JSONResponse(result)
 
     except Exception as e:
         import traceback
         traceback.print_exc()
-        logger.error("Langflow request failed", error=str(e))
+        logger.error(f"[DEBUG] langflow_endpoint EXCEPTION elapsed={time.time()-t0:.2f}s error={e}")
         return JSONResponse(
             {"error": f"Langflow request failed: {str(e)}"}, status_code=500
         )
