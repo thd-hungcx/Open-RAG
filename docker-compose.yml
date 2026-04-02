@@ -137,6 +137,7 @@ services:
       - ${OPENRAG_FLOWS_PATH:-./flows}:/app/flows:U,z
       - ${LANGFLOW_DATA_PATH:-./langflow-data}:/app/langflow-data:U,z
       - ./sdks/mcp:/app/openrag-mcp:U,z
+      - ${OPENRAG_DOCUMENTS_PATH:-./openrag-documents}:/app/openrag-documents:U,z
     image: langflowai/openrag-langflow:${OPENRAG_VERSION:-latest}
     build:
       context: .

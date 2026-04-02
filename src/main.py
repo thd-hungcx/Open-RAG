@@ -30,6 +30,7 @@ from api import (
     connectors,
     docling,
     documents,
+    files,
     flows,
     knowledge_filter,
     langflow_files,
@@ -1600,6 +1601,14 @@ async def create_app():
     app.add_api_route("/chat", chat.chat_endpoint, methods=["POST"], tags=["internal"])
     app.add_api_route(
         "/langflow", chat.langflow_endpoint, methods=["POST"], tags=["internal"]
+    )
+
+    # File download endpoint (for generated .docx contracts etc.)
+    app.add_api_route(
+        "/files/download/{filename}",
+        files.download_file,
+        methods=["GET"],
+        tags=["internal"],
     )
 
     # Chat history endpoints
