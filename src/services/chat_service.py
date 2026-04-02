@@ -57,8 +57,8 @@ class ChatService:
         previous_response_id: str = None,
         stream: bool = False,
         filter_id: str = None,
-        department: str = None,
-        role: str = None,
+        role: str | None = None,
+        department: str | None = None,
     ):
         """Handle Langflow chat requests"""
         if not prompt:
@@ -81,13 +81,9 @@ class ChatService:
         config = get_openrag_config()
         embedding_model = config.knowledge.embedding_model
         extra_headers["X-LANGFLOW-GLOBAL-VAR-SELECTED_EMBEDDING_MODEL"] = embedding_model
-        if department:
-            extra_headers["X-LANGFLOW-GLOBAL-VAR-DEPARTMENT"] = department
-        if role:
-            extra_headers["X-LANGFLOW-GLOBAL-VAR-ROLE"] = role
         
         # Add provider credentials to headers
-        await add_provider_credentials_to_headers(extra_headers, config, flows_service=self.flows_service)
+        await add_provider_credentials_to_headers(extra_headers, config, flows_service=self.flows_service, jwt_token=jwt_token)
         logger.debug(f"[LF] Extra headers {extra_headers}")
         # Get context variables for filters, limit, and threshold
         from auth_context import (
@@ -126,6 +122,14 @@ class ChatService:
 
             if filter_clauses:
                 filter_expression["filter"] = filter_clauses
+
+        # Add RBAC context for OpenSearch node policy
+        if role:
+            filter_expression["role"] = role
+            extra_headers["X-LANGFLOW-GLOBAL-VAR-ROLE"] = role
+        if department:
+            filter_expression["department"] = department
+            extra_headers["X-LANGFLOW-GLOBAL-VAR-DEPARTMENT"] = department
 
         # Add limit and score threshold to the filter expression (only if different from defaults)
         if limit and limit != 10:  # 10 is the default limit
@@ -212,7 +216,7 @@ class ChatService:
         extra_headers["X-LANGFLOW-GLOBAL-VAR-SELECTED_EMBEDDING_MODEL"] = embedding_model
         
         # Add provider credentials to headers
-        await add_provider_credentials_to_headers(extra_headers, config, flows_service=self.flows_service)
+        await add_provider_credentials_to_headers(extra_headers, config, flows_service=self.flows_service, jwt_token=jwt_token)
 
         # Build the complete filter expression like the chat service does
         filter_expression = {}
@@ -342,7 +346,7 @@ class ChatService:
             extra_headers["X-LANGFLOW-GLOBAL-VAR-SELECTED_EMBEDDING_MODEL"] = embedding_model
             
             # Add provider credentials to headers
-            await add_provider_credentials_to_headers(extra_headers, config, flows_service=self.flows_service)
+            await add_provider_credentials_to_headers(extra_headers, config, flows_service=self.flows_service, jwt_token=jwt_token)
             
             # Ensure the Langflow client exists; try lazy init if needed
             langflow_client = await clients.ensure_langflow_client()

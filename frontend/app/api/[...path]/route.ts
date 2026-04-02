@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { Agent, setGlobalDispatcher } from "undici";
 
 // Increase undici body/headers timeout for slow LLM responses (default is 300s)
-setGlobalDispatcher(new Agent({ bodyTimeout: 900_000, headersTimeout: 900_000 }));
+setGlobalDispatcher(
+  new Agent({ bodyTimeout: 900_000, headersTimeout: 900_000 }),
+);
 
 export async function GET(
   request: NextRequest,

@@ -124,9 +124,18 @@ async def async_response_stream(
         if previous_response_id is not None:
             request_params["previous_response_id"] = previous_response_id
 
-        if "x-api-key" not in client.default_headers:
-            if hasattr(client, "api_key") and extra_headers is not None:
-                extra_headers["x-api-key"] = client.api_key
+        from config.settings import LANGFLOW_URL, get_langflow_api_key
+
+        if extra_headers is None:
+            extra_headers = {}
+
+        is_langflow_client = str(getattr(client, "base_url", "")).startswith(f"{LANGFLOW_URL}/api/v1")
+        if is_langflow_client:
+            langflow_key = await get_langflow_api_key(force_regenerate=True)
+            if langflow_key:
+                extra_headers["x-api-key"] = langflow_key
+        elif "x-api-key" not in client.default_headers and hasattr(client, "api_key"):
+            extra_headers["x-api-key"] = client.api_key
 
         if extra_headers:
             request_params["extra_headers"] = extra_headers
@@ -289,9 +298,21 @@ async def async_response(
         if extra_headers:
             request_params["extra_headers"] = extra_headers
 
-        if "x-api-key" not in client.default_headers:
-            if hasattr(client, "api_key") and extra_headers is not None:
-                extra_headers["x-api-key"] = client.api_key
+        from config.settings import LANGFLOW_URL, get_langflow_api_key
+
+        if extra_headers is None:
+            extra_headers = {}
+
+        is_langflow_client = str(getattr(client, "base_url", "")).startswith(f"{LANGFLOW_URL}/api/v1")
+        if is_langflow_client:
+            langflow_key = await get_langflow_api_key(force_regenerate=True)
+            if langflow_key:
+                extra_headers["x-api-key"] = langflow_key
+        elif "x-api-key" not in client.default_headers and hasattr(client, "api_key"):
+            extra_headers["x-api-key"] = client.api_key
+
+        if extra_headers:
+            request_params["extra_headers"] = extra_headers
 
         response = await client.responses.create(**request_params)
 
@@ -763,23 +784,23 @@ async def async_langflow_chat_stream(
                 "error": error_occurred,  # Mark if this was an error response
             }
             # Store usage data if available (from response.completed event)
-            if usage_data:
-                assistant_message["response_data"] = {"usage": usage_data}
-            conversation_state["messages"].append(assistant_message)
+        if usage_data:
+            assistant_message["response_data"] = {"usage": usage_data}
+        conversation_state["messages"].append(assistant_message)
 
-            # Store the conversation thread with its response_id
-            if response_id:
-                conversation_state["last_activity"] = datetime.now()
-                await store_conversation_thread(user_id, response_id, conversation_state)
+        # Store the conversation thread with its response_id
+        if response_id:
+            conversation_state["last_activity"] = datetime.now()
+            await store_conversation_thread(user_id, response_id, conversation_state)
 
             # Claim session ownership for this user
-            try:
-                from services.session_ownership_service import session_ownership_service
+        try:
+            from services.session_ownership_service import session_ownership_service
 
-                session_ownership_service.claim_session(user_id, response_id)
-                logger.debug(f"Claimed session {response_id} for user {user_id}")
-            except Exception as e:
-                logger.warning(f"Failed to claim session ownership: {e}")
+            session_ownership_service.claim_session(user_id, response_id)
+            logger.debug(f"Claimed session {response_id} for user {user_id}")
+        except Exception as e:
+            logger.warning(f"Failed to claim session ownership: {e}")
 
             logger.debug(
                 f"Stored langflow conversation thread for user {user_id} with response_id: {response_id}"

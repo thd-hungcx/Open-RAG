@@ -66,6 +66,13 @@ def get_embedding_field_name(model_name: str) -> str:
     return f"chunk_embedding_{normalize_model_name(model_name)}"
 
 
+def get_model_base_name(model_name: str) -> str:
+    """Return normalized base model name without version suffix."""
+    if not model_name:
+        return ""
+    return str(model_name).strip().lower().split(":", 1)[0]
+
+
 @vector_store_connection
 class OpenSearchVectorStoreComponentMultimodalMultiEmbedding(LCVectorStoreComponent):
     """OpenSearch Vector Store Component with Multi-Model Hybrid Search Capabilities.
@@ -121,6 +128,8 @@ class OpenSearchVectorStoreComponentMultimodalMultiEmbedding(LCVectorStoreCompon
         "use_ssl",
         "verify_certs",
         "filter_expression",
+        "role_context",
+        "department_context",
         "engine",
         "space_type",
         "ef_construction",
@@ -276,6 +285,20 @@ class OpenSearchVectorStoreComponentMultimodalMultiEmbedding(LCVectorStoreCompon
                 "Use __IMPOSSIBLE_VALUE__ as placeholder to ignore specific filters."
             ),
         ),
+        StrInput(
+            name="role_context",
+            display_name="Role Context",
+            value="",
+            input_types=["Message"],
+            info="Optional role for RBAC filter (e.g., Employee, Manager). Overrides role in filter_expression.",
+        ),
+        StrInput(
+            name="department_context",
+            display_name="Department Context",
+            value="",
+            input_types=["Message"],
+            info="Optional department for RBAC filter (e.g., IT, Legal). Overrides department in filter_expression.",
+        ),
         # ----- Auth controls (dynamic) -----
         DropdownInput(
             name="auth_mode",
@@ -415,14 +438,7 @@ class OpenSearchVectorStoreComponentMultimodalMultiEmbedding(LCVectorStoreCompon
             raise TypeError(msg)
 
         # Apply filter_expression if configured (same parsing as search())
-        filter_obj = None
-        if getattr(self, "filter_expression", "") and self.filter_expression.strip():
-            try:
-                filter_obj = json.loads(self.filter_expression)
-            except json.JSONDecodeError as e:
-                msg = f"Invalid filter_expression JSON: {e}"
-                raise ValueError(msg) from e
-
+        filter_obj = self._parse_filter_expression_value()
         filter_clauses = self._coerce_filter_clauses(filter_obj)
 
         if filter_clauses:
@@ -1294,72 +1310,186 @@ class OpenSearchVectorStoreComponentMultimodalMultiEmbedding(LCVectorStoreCompon
         # term_obj like {"filename": "__IMPOSSIBLE_VALUE__"}
         return any(v == "__IMPOSSIBLE_VALUE__" for v in term_obj.values())
 
-    def _coerce_filter_clauses(self, filter_obj: dict | None) -> list[dict]:
-        """Convert filter expressions into OpenSearch-compatible filter clauses.
+    def _extract_context_text(self, value: Any) -> str:
+        """Extract text payload from plain strings, Message-like dicts, or Message-like objects."""
+        if value is None:
+            return ""
 
-        This method accepts two filter formats and converts them to standardized
-        OpenSearch query clauses:
+        if isinstance(value, str):
+            return value.strip()
 
-        Format A - Explicit filters:
-        {"filter": [{"term": {"field": "value"}}, {"terms": {"field": ["val1", "val2"]}}],
-         "limit": 10, "score_threshold": 1.5}
+        if isinstance(value, dict):
+            direct_text = value.get("text")
+            if isinstance(direct_text, str) and direct_text.strip():
+                return direct_text.strip()
 
-        Format B - Context-style mapping:
-        {"data_sources": ["file1.pdf"], "document_types": ["pdf"], "owners": ["user1"]}
+            nested_data = value.get("data")
+            if isinstance(nested_data, dict):
+                nested_text = nested_data.get("text")
+                if isinstance(nested_text, str):
+                    return nested_text.strip()
 
-        Args:
-            filter_obj: Filter configuration dictionary or None
+            return ""
 
-        Returns:
-            List of OpenSearch filter clauses (term/terms objects)
-            Placeholder values with "__IMPOSSIBLE_VALUE__" are ignored
+        data_attr = getattr(value, "data", None)
+        if isinstance(data_attr, dict):
+            nested_text = data_attr.get("text")
+            if isinstance(nested_text, str):
+                return nested_text.strip()
+
+        text_attr = getattr(value, "text", None)
+        if isinstance(text_attr, str):
+            return text_attr.strip()
+
+        return ""
+
+    def _build_rbac_filter_clause(self, filter_obj: dict | None) -> dict | None:
+        """Build RBAC filter clause from role and department context.
+
+        Policy:
+        - Same department:
+          - Employee: only is_confidential=false
+          - Manager: can read all documents
+        - Different department:
+          - only shared=true
         """
-        if not filter_obj:
-            return []
+        if not isinstance(filter_obj, dict):
+            filter_obj = {}
 
-        # If it is a string, try to parse it once
+        role_context = self._extract_context_text(getattr(self, "role_context", ""))
+        department_context = self._extract_context_text(getattr(self, "department_context", ""))
+
+        user_department = str(filter_obj.get("department") or "").strip() or department_context
+        if not user_department:
+            return None
+
+        role = (
+            str(filter_obj.get("role") or "").strip()
+            or role_context
+            or "employee"
+        ).lower()
+
+        same_department_match = {
+            "bool": {
+                "should": [
+                    {"term": {"department.keyword": user_department}},
+                    {"term": {"department": user_department}},
+                    {"term": {"department": user_department.lower()}},
+                    {"match_phrase": {"department": user_department}},
+                ],
+                "minimum_should_match": 1,
+            }
+        }
+
+        same_department_filters: list[dict[str, Any]] = [same_department_match]
+        if role != "manager":
+            same_department_filters.append(
+                {
+                    "bool": {
+                        "should": [
+                            {"term": {"is_confidential": False}},
+                            {"term": {"is_confidential": "false"}},
+                        ],
+                        "minimum_should_match": 1,
+                    }
+                }
+            )
+
+        same_department_clause = {"bool": {"filter": same_department_filters}}
+        cross_department_clause = {
+            "bool": {
+                "filter": [
+                    {"bool": {"must_not": [same_department_match]}},
+                    {
+                        "bool": {
+                            "should": [
+                                {"term": {"shared": True}},
+                                {"term": {"shared": "true"}},
+                            ],
+                            "minimum_should_match": 1,
+                        }
+                    },
+                ]
+            }
+        }
+
+        return {
+            "bool": {
+                "should": [same_department_clause, cross_department_clause],
+                "minimum_should_match": 1,
+            }
+        }
+
+    def _parse_filter_expression_value(self) -> dict:
+        """Parse filter_expression and tolerate double-encoded JSON strings."""
+        raw_filter = getattr(self, "filter_expression", "")
+        if not isinstance(raw_filter, str) or not raw_filter.strip():
+            return {}
+
+        parsed: Any = raw_filter
+        for _ in range(2):
+            if isinstance(parsed, str):
+                try:
+                    parsed = json.loads(parsed)
+                except json.JSONDecodeError as e:
+                    msg = f"Invalid filter_expression JSON: {e}"
+                    raise ValueError(msg) from e
+            else:
+                break
+
+        return parsed if isinstance(parsed, dict) else {}
+
+    def _coerce_filter_clauses(self, filter_obj: dict | None) -> list[dict]:
+        """Convert filter expressions into OpenSearch-compatible filter clauses."""
         if isinstance(filter_obj, str):
             try:
                 filter_obj = json.loads(filter_obj)
             except json.JSONDecodeError:
-                # Not valid JSON - treat as no filters
-                return []
+                filter_obj = {}
 
-        # Case A: already an explicit list/dict under "filter"
+        if not isinstance(filter_obj, dict):
+            filter_obj = {}
+
+        clauses: list[dict] = []
+
+        # Case A: explicit filters
         if "filter" in filter_obj:
             raw = filter_obj["filter"]
             if isinstance(raw, dict):
                 raw = [raw]
-            explicit_clauses: list[dict] = []
             for f in raw or []:
                 if "term" in f and isinstance(f["term"], dict) and not self._is_placeholder_term(f["term"]):
-                    explicit_clauses.append(f)
+                    clauses.append(f)
                 elif "terms" in f and isinstance(f["terms"], dict):
-                    field, vals = next(iter(f["terms"].items()))
+                    _, vals = next(iter(f["terms"].items()))
                     if isinstance(vals, list) and len(vals) > 0:
-                        explicit_clauses.append(f)
-            return explicit_clauses
+                        clauses.append(f)
 
-        # Case B: convert context-style maps into clauses
+        # Case B: context-style map
         field_mapping = {
             "data_sources": "filename",
             "document_types": "mimetype",
             "owners": "owner",
         }
-        context_clauses: list[dict] = []
-        for k, values in filter_obj.items():
+        for key, values in filter_obj.items():
+            if key in {"filter", "limit", "score_threshold", "scoreThreshold", "role", "department"}:
+                continue
             if not isinstance(values, list):
                 continue
-            field = field_mapping.get(k, k)
+            field = field_mapping.get(key, key)
             if len(values) == 0:
-                # Match-nothing placeholder (kept to mirror your tool semantics)
-                context_clauses.append({"term": {field: "__IMPOSSIBLE_VALUE__"}})
+                clauses.append({"term": {field: "__IMPOSSIBLE_VALUE__"}})
             elif len(values) == 1:
                 if values[0] != "__IMPOSSIBLE_VALUE__":
-                    context_clauses.append({"term": {field: values[0]}})
+                    clauses.append({"term": {field: values[0]}})
             else:
-                context_clauses.append({"terms": {field: values}})
-        return context_clauses
+                clauses.append({"terms": {field: values}})
+
+        rbac_clause = self._build_rbac_filter_clause(filter_obj)
+        if rbac_clause:
+            clauses.append(rbac_clause)
+
+        return clauses
 
     def _detect_available_models(self, client: OpenSearch, filter_clauses: list[dict] | None = None) -> list[str]:
         """Detect which embedding models have documents in the index.
@@ -1473,28 +1603,56 @@ class OpenSearchVectorStoreComponentMultimodalMultiEmbedding(LCVectorStoreCompon
 
         return None
 
-    def _get_filename_agg_field(self, index_properties: dict[str, Any] | None) -> str:
+    def _resolve_terms_agg_field(self, field_name: str, index_properties: dict[str, Any] | None) -> str | None:
+        """Resolve a safe field name for terms aggregation.
+
+        Returns field_name or field_name.keyword when mapped as keyword-compatible,
+        otherwise returns None to avoid text fielddata errors.
+        """
+        if not field_name:
+            return None
+
+        if not isinstance(index_properties, dict):
+            return f"{field_name}.keyword"
+
+        field_def = index_properties.get(field_name)
+        if not isinstance(field_def, dict):
+            return f"{field_name}.keyword"
+
+        field_type = field_def.get("type")
+        if field_type == "keyword":
+            return field_name
+
+        fields_def = field_def.get("fields", {})
+        if isinstance(fields_def, dict):
+            keyword_def = fields_def.get("keyword")
+            if isinstance(keyword_def, dict) and keyword_def.get("type") == "keyword":
+                return f"{field_name}.keyword"
+
+        return None
+
+    def _get_filename_agg_field(self, index_properties: dict[str, Any] | None) -> str | None:
         """Choose the appropriate field for filename aggregations."""
-        if not index_properties:
-            return "filename.keyword"
+        return self._resolve_terms_agg_field("filename", index_properties)
 
-        filename_def = index_properties.get("filename")
-        if not isinstance(filename_def, dict):
-            return "filename.keyword"
+    def _build_terms_aggregations(self, index_properties: dict[str, Any] | None) -> dict[str, Any]:
+        """Build terms aggregations only for keyword-compatible fields."""
+        aggregations: dict[str, Any] = {}
+        agg_specs = {
+            "data_sources": ("filename", 20),
+            "document_types": ("mimetype", 10),
+            "owners": ("owner", 10),
+            "embedding_models": ("embedding_model", 10),
+        }
 
-        field_type = filename_def.get("type")
-        fields_def = filename_def.get("fields", {})
+        for agg_name, (field_name, size) in agg_specs.items():
+            resolved_field = self._resolve_terms_agg_field(field_name, index_properties)
+            if resolved_field:
+                aggregations[agg_name] = {"terms": {"field": resolved_field, "size": size}}
+            else:
+                self.log(f"[AGG SKIP] Skipping aggregation '{agg_name}' - field '{field_name}' is not keyword-compatible")
 
-        # Top-level keyword with no subfields
-        if field_type == "keyword" and not isinstance(fields_def, dict):
-            return "filename"
-
-        # Text field with keyword subfield
-        if isinstance(fields_def, dict) and "keyword" in fields_def:
-            return "filename.keyword"
-
-        # Fallback: aggregate on filename directly
-        return "filename"
+        return aggregations
 
     # ---------- search (multi-model hybrid) ----------
     def search(self, query: str | None = None) -> list[dict[str, Any]]:
@@ -1526,13 +1684,7 @@ class OpenSearchVectorStoreComponentMultimodalMultiEmbedding(LCVectorStoreCompon
         q = (query or "").strip()
 
         # Parse optional filter expression
-        filter_obj = None
-        if getattr(self, "filter_expression", "") and self.filter_expression.strip():
-            try:
-                filter_obj = json.loads(self.filter_expression)
-            except json.JSONDecodeError as e:
-                msg = f"Invalid filter_expression JSON: {e}"
-                raise ValueError(msg) from e
+        filter_obj = self._parse_filter_expression_value()
 
         if not self.embedding:
             msg = "Embedding is required to run hybrid search (KNN + keyword)."
@@ -1657,12 +1809,24 @@ class OpenSearchVectorStoreComponentMultimodalMultiEmbedding(LCVectorStoreCompon
         matched_models = []
         unmatched_models = []
 
+        # Build base-name aliases to tolerate version tags, e.g. qwen3-embedding:latest vs qwen3-embedding:0.6b
+        embedding_by_base_model: dict[str, Any] = {}
+        for identifier, emb_obj in embedding_by_model.items():
+            base_name = get_model_base_name(identifier)
+            if base_name and base_name not in embedding_by_base_model:
+                embedding_by_base_model[base_name] = emb_obj
+
         for model_name in available_models:
             try:
-                # Check if we have an embedding object for this model
-                if model_name in embedding_by_model:
-                    # Use the matching embedding object directly
-                    emb_obj = embedding_by_model[model_name]
+                # Prefer exact identifier match, then fallback to base model name alias
+                emb_obj = embedding_by_model.get(model_name)
+                matched_by_base_name = False
+                if emb_obj is None:
+                    base_name = get_model_base_name(model_name)
+                    emb_obj = embedding_by_base_model.get(base_name)
+                    matched_by_base_name = emb_obj is not None
+
+                if emb_obj is not None:
                     emb_deployment = getattr(emb_obj, "deployment", None)
                     emb_model = getattr(emb_obj, "model", None)
                     emb_model_id = getattr(emb_obj, "model_id", None)
@@ -1674,6 +1838,12 @@ class OpenSearchVectorStoreComponentMultimodalMultiEmbedding(LCVectorStoreCompon
                         f"deployment={emb_deployment}, model={emb_model}, model_id={emb_model_id}, "
                         f"dimensions={emb_dimensions}"
                     )
+
+                    if matched_by_base_name:
+                        self.log(
+                            f"[ALIAS MATCH] Model '{model_name}' matched by base name "
+                            f"'{get_model_base_name(model_name)}'"
+                        )
 
                     # Check if this is a dedicated instance from available_models dict
                     if emb_available_models and isinstance(emb_available_models, dict):
@@ -1809,8 +1979,8 @@ class OpenSearchVectorStoreComponentMultimodalMultiEmbedding(LCVectorStoreCompon
         limit = (filter_obj or {}).get("limit", self.number_of_results)
         score_threshold = (filter_obj or {}).get("score_threshold", 0)
 
-        # Determine the best aggregation field for filename based on index mapping
-        filename_agg_field = self._get_filename_agg_field(index_properties)
+        # Build terms aggregations only on keyword-compatible fields
+        terms_aggs = self._build_terms_aggregations(index_properties)
 
         # Build multi-model hybrid query
         body = {
@@ -1838,12 +2008,7 @@ class OpenSearchVectorStoreComponentMultimodalMultiEmbedding(LCVectorStoreCompon
                     "filter": all_filters,
                 }
             },
-            "aggs": {
-                "data_sources": {"terms": {"field": filename_agg_field, "size": 20}},
-                "document_types": {"terms": {"field": "mimetype", "size": 10}},
-                "owners": {"terms": {"field": "owner", "size": 10}},
-                "embedding_models": {"terms": {"field": "embedding_model", "size": 10}},
-            },
+            "aggs": terms_aggs,
             "_source": [
                 "filename",
                 "mimetype",

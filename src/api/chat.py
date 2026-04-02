@@ -1,6 +1,6 @@
 from typing import Optional, Any, Dict
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse, StreamingResponse
 from utils.logging_config import get_logger
@@ -19,8 +19,8 @@ class ChatBody(BaseModel):
     limit: int = 10
     scoreThreshold: float = 0
     filter_id: Optional[str] = None
-    department: Optional[str] = None
     role: Optional[str] = None
+    department: Optional[str] = None
 
 
 async def chat_endpoint(
@@ -75,6 +75,7 @@ async def chat_endpoint(
 
 async def langflow_endpoint(
     body: ChatBody,
+    request: Request,
     chat_service=Depends(get_chat_service),
     session_manager=Depends(get_session_manager),
     user: User = Depends(get_current_user),
@@ -88,6 +89,13 @@ async def langflow_endpoint(
         return JSONResponse({"error": "Prompt is required"}, status_code=400)
 
     jwt_token = user.jwt_token
+
+    role = body.role
+    department = body.department
+    if role is None:
+        role = request.headers.get("x-user-role")
+    if department is None:
+        department = request.headers.get("x-user-department")
 
     if body.filters:
         from auth_context import set_search_filters
@@ -126,7 +134,16 @@ async def langflow_endpoint(
                     raise
 
             return StreamingResponse(
-                logged_stream(),
+                await chat_service.langflow_chat(
+                    body.prompt,
+                    user.user_id,
+                    jwt_token,
+                    previous_response_id=body.previous_response_id,
+                    stream=True,
+                    filter_id=body.filter_id,
+                    role=role,
+                    department=department,
+                ),
                 media_type="text/event-stream",
                 headers={
                     "Cache-Control": "no-cache",
@@ -144,8 +161,8 @@ async def langflow_endpoint(
                 previous_response_id=body.previous_response_id,
                 stream=False,
                 filter_id=body.filter_id,
-                department=body.department,
                 role=body.role,
+                department=body.department,
             )
             logger.info(f"[DEBUG] langflow_chat done elapsed={time.time()-t0:.2f}s")
             return JSONResponse(result)

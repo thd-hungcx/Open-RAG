@@ -1569,16 +1569,17 @@
                 "type": "model",
                 "value": [
                   {
-                    "category": "OpenAI",
-                    "icon": "OpenAI",
+                    "name": "qwen3-coder-next:latest",
+                    "icon": "Ollama",
+                    "category": "Ollama",
+                    "provider": "Ollama",
                     "metadata": {
-                      "api_key_param": "api_key",
                       "context_length": 128000,
-                      "model_class": "ChatOpenAI",
-                      "model_name_param": "model"
-                    },
-                    "name": "gpt-4",
-                    "provider": "OpenAI"
+                      "model_class": "ChatOllama",
+                      "model_name_param": "model",
+                      "api_key_param": "api_key",
+                      "base_url_param": "base_url"
+                    }
                   }
                 ]
               },
