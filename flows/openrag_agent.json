@@ -22,12 +22,12 @@
             "type": "other"
           }
         },
-        "id": "xy-edge__MCP-7EY21{\u0153dataType\u0153:\u0153MCP\u0153,\u0153id\u0153:\u0153MCP-7EY21\u0153,\u0153name\u0153:\u0153component_as_tool\u0153,\u0153output_types\u0153:[\u0153Tool\u0153]}-Agent-Nfw7u{\u0153fieldName\u0153:\u0153tools\u0153,\u0153id\u0153:\u0153Agent-Nfw7u\u0153,\u0153inputTypes\u0153:[\u0153Tool\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "id": "xy-edge__MCP-7EY21{œdataTypeœ:œMCPœ,œidœ:œMCP-7EY21œ,œnameœ:œcomponent_as_toolœ,œoutput_typesœ:[œToolœ]}-Agent-Nfw7u{œfieldNameœ:œtoolsœ,œidœ:œAgent-Nfw7uœ,œinputTypesœ:[œToolœ],œtypeœ:œotherœ}",
         "selected": false,
         "source": "MCP-7EY21",
-        "sourceHandle": "{\u0153dataType\u0153:\u0153MCP\u0153,\u0153id\u0153:\u0153MCP-7EY21\u0153,\u0153name\u0153:\u0153component_as_tool\u0153,\u0153output_types\u0153:[\u0153Tool\u0153]}",
+        "sourceHandle": "{œdataTypeœ:œMCPœ,œidœ:œMCP-7EY21œ,œnameœ:œcomponent_as_toolœ,œoutput_typesœ:[œToolœ]}",
         "target": "Agent-Nfw7u",
-        "targetHandle": "{\u0153fieldName\u0153:\u0153tools\u0153,\u0153id\u0153:\u0153Agent-Nfw7u\u0153,\u0153inputTypes\u0153:[\u0153Tool\u0153],\u0153type\u0153:\u0153other\u0153}"
+        "targetHandle": "{œfieldNameœ:œtoolsœ,œidœ:œAgent-Nfw7uœ,œinputTypesœ:[œToolœ],œtypeœ:œotherœ}"
       },
       {
         "animated": false,
@@ -52,12 +52,12 @@
             "type": "other"
           }
         },
-        "id": "xy-edge__Agent-Nfw7u{\u0153dataType\u0153:\u0153Agent\u0153,\u0153id\u0153:\u0153Agent-Nfw7u\u0153,\u0153name\u0153:\u0153response\u0153,\u0153output_types\u0153:[\u0153Message\u0153]}-ChatOutput-gWl8E{\u0153fieldName\u0153:\u0153input_value\u0153,\u0153id\u0153:\u0153ChatOutput-gWl8E\u0153,\u0153inputTypes\u0153:[\u0153Data\u0153,\u0153DataFrame\u0153,\u0153Message\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "id": "xy-edge__Agent-Nfw7u{œdataTypeœ:œAgentœ,œidœ:œAgent-Nfw7uœ,œnameœ:œresponseœ,œoutput_typesœ:[œMessageœ]}-ChatOutput-gWl8E{œfieldNameœ:œinput_valueœ,œidœ:œChatOutput-gWl8Eœ,œinputTypesœ:[œDataœ,œDataFrameœ,œMessageœ],œtypeœ:œotherœ}",
         "selected": false,
         "source": "Agent-Nfw7u",
-        "sourceHandle": "{\u0153dataType\u0153:\u0153Agent\u0153,\u0153id\u0153:\u0153Agent-Nfw7u\u0153,\u0153name\u0153:\u0153response\u0153,\u0153output_types\u0153:[\u0153Message\u0153]}",
+        "sourceHandle": "{œdataTypeœ:œAgentœ,œidœ:œAgent-Nfw7uœ,œnameœ:œresponseœ,œoutput_typesœ:[œMessageœ]}",
         "target": "ChatOutput-gWl8E",
-        "targetHandle": "{\u0153fieldName\u0153:\u0153input_value\u0153,\u0153id\u0153:\u0153ChatOutput-gWl8E\u0153,\u0153inputTypes\u0153:[\u0153Data\u0153,\u0153DataFrame\u0153,\u0153Message\u0153],\u0153type\u0153:\u0153other\u0153}"
+        "targetHandle": "{œfieldNameœ:œinput_valueœ,œidœ:œChatOutput-gWl8Eœ,œinputTypesœ:[œDataœ,œDataFrameœ,œMessageœ],œtypeœ:œotherœ}"
       },
       {
         "animated": false,
@@ -80,12 +80,12 @@
             "type": "other"
           }
         },
-        "id": "xy-edge__CalculatorComponent-KrlMH{\u0153dataType\u0153:\u0153CalculatorComponent\u0153,\u0153id\u0153:\u0153CalculatorComponent-KrlMH\u0153,\u0153name\u0153:\u0153component_as_tool\u0153,\u0153output_types\u0153:[\u0153Tool\u0153]}-Agent-Nfw7u{\u0153fieldName\u0153:\u0153tools\u0153,\u0153id\u0153:\u0153Agent-Nfw7u\u0153,\u0153inputTypes\u0153:[\u0153Tool\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "id": "xy-edge__CalculatorComponent-KrlMH{œdataTypeœ:œCalculatorComponentœ,œidœ:œCalculatorComponent-KrlMHœ,œnameœ:œcomponent_as_toolœ,œoutput_typesœ:[œToolœ]}-Agent-Nfw7u{œfieldNameœ:œtoolsœ,œidœ:œAgent-Nfw7uœ,œinputTypesœ:[œToolœ],œtypeœ:œotherœ}",
         "selected": false,
         "source": "CalculatorComponent-KrlMH",
-        "sourceHandle": "{\u0153dataType\u0153:\u0153CalculatorComponent\u0153,\u0153id\u0153:\u0153CalculatorComponent-KrlMH\u0153,\u0153name\u0153:\u0153component_as_tool\u0153,\u0153output_types\u0153:[\u0153Tool\u0153]}",
+        "sourceHandle": "{œdataTypeœ:œCalculatorComponentœ,œidœ:œCalculatorComponent-KrlMHœ,œnameœ:œcomponent_as_toolœ,œoutput_typesœ:[œToolœ]}",
         "target": "Agent-Nfw7u",
-        "targetHandle": "{\u0153fieldName\u0153:\u0153tools\u0153,\u0153id\u0153:\u0153Agent-Nfw7u\u0153,\u0153inputTypes\u0153:[\u0153Tool\u0153],\u0153type\u0153:\u0153other\u0153}"
+        "targetHandle": "{œfieldNameœ:œtoolsœ,œidœ:œAgent-Nfw7uœ,œinputTypesœ:[œToolœ],œtypeœ:œotherœ}"
       },
       {
         "animated": false,
@@ -108,12 +108,12 @@
             "type": "other"
           }
         },
-        "id": "xy-edge__EmbeddingModel-zLHKs{\u0153dataType\u0153:\u0153EmbeddingModel\u0153,\u0153id\u0153:\u0153EmbeddingModel-zLHKs\u0153,\u0153name\u0153:\u0153embeddings\u0153,\u0153output_types\u0153:[\u0153Embeddings\u0153]}-OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE{\u0153fieldName\u0153:\u0153embedding\u0153,\u0153id\u0153:\u0153OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE\u0153,\u0153inputTypes\u0153:[\u0153Embeddings\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "id": "xy-edge__EmbeddingModel-zLHKs{œdataTypeœ:œEmbeddingModelœ,œidœ:œEmbeddingModel-zLHKsœ,œnameœ:œembeddingsœ,œoutput_typesœ:[œEmbeddingsœ]}-OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE{œfieldNameœ:œembeddingœ,œidœ:œOpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvEœ,œinputTypesœ:[œEmbeddingsœ],œtypeœ:œotherœ}",
         "selected": false,
         "source": "EmbeddingModel-zLHKs",
-        "sourceHandle": "{\u0153dataType\u0153:\u0153EmbeddingModel\u0153,\u0153id\u0153:\u0153EmbeddingModel-zLHKs\u0153,\u0153name\u0153:\u0153embeddings\u0153,\u0153output_types\u0153:[\u0153Embeddings\u0153]}",
+        "sourceHandle": "{œdataTypeœ:œEmbeddingModelœ,œidœ:œEmbeddingModel-zLHKsœ,œnameœ:œembeddingsœ,œoutput_typesœ:[œEmbeddingsœ]}",
         "target": "OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE",
-        "targetHandle": "{\u0153fieldName\u0153:\u0153embedding\u0153,\u0153id\u0153:\u0153OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE\u0153,\u0153inputTypes\u0153:[\u0153Embeddings\u0153],\u0153type\u0153:\u0153other\u0153}"
+        "targetHandle": "{œfieldNameœ:œembeddingœ,œidœ:œOpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvEœ,œinputTypesœ:[œEmbeddingsœ],œtypeœ:œotherœ}"
       },
       {
         "animated": false,
@@ -136,12 +136,12 @@
             "type": "other"
           }
         },
-        "id": "xy-edge__EmbeddingModel-J6YgA{\u0153dataType\u0153:\u0153EmbeddingModel\u0153,\u0153id\u0153:\u0153EmbeddingModel-J6YgA\u0153,\u0153name\u0153:\u0153embeddings\u0153,\u0153output_types\u0153:[\u0153Embeddings\u0153]}-OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE{\u0153fieldName\u0153:\u0153embedding\u0153,\u0153id\u0153:\u0153OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE\u0153,\u0153inputTypes\u0153:[\u0153Embeddings\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "id": "xy-edge__EmbeddingModel-J6YgA{œdataTypeœ:œEmbeddingModelœ,œidœ:œEmbeddingModel-J6YgAœ,œnameœ:œembeddingsœ,œoutput_typesœ:[œEmbeddingsœ]}-OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE{œfieldNameœ:œembeddingœ,œidœ:œOpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvEœ,œinputTypesœ:[œEmbeddingsœ],œtypeœ:œotherœ}",
         "selected": false,
         "source": "EmbeddingModel-J6YgA",
-        "sourceHandle": "{\u0153dataType\u0153:\u0153EmbeddingModel\u0153,\u0153id\u0153:\u0153EmbeddingModel-J6YgA\u0153,\u0153name\u0153:\u0153embeddings\u0153,\u0153output_types\u0153:[\u0153Embeddings\u0153]}",
+        "sourceHandle": "{œdataTypeœ:œEmbeddingModelœ,œidœ:œEmbeddingModel-J6YgAœ,œnameœ:œembeddingsœ,œoutput_typesœ:[œEmbeddingsœ]}",
         "target": "OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE",
-        "targetHandle": "{\u0153fieldName\u0153:\u0153embedding\u0153,\u0153id\u0153:\u0153OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE\u0153,\u0153inputTypes\u0153:[\u0153Embeddings\u0153],\u0153type\u0153:\u0153other\u0153}"
+        "targetHandle": "{œfieldNameœ:œembeddingœ,œidœ:œOpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvEœ,œinputTypesœ:[œEmbeddingsœ],œtypeœ:œotherœ}"
       },
       {
         "animated": false,
@@ -164,12 +164,12 @@
             "type": "other"
           }
         },
-        "id": "xy-edge__EmbeddingModel-aIP4U{\u0153dataType\u0153:\u0153EmbeddingModel\u0153,\u0153id\u0153:\u0153EmbeddingModel-aIP4U\u0153,\u0153name\u0153:\u0153embeddings\u0153,\u0153output_types\u0153:[\u0153Embeddings\u0153]}-OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE{\u0153fieldName\u0153:\u0153embedding\u0153,\u0153id\u0153:\u0153OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE\u0153,\u0153inputTypes\u0153:[\u0153Embeddings\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "id": "xy-edge__EmbeddingModel-aIP4U{œdataTypeœ:œEmbeddingModelœ,œidœ:œEmbeddingModel-aIP4Uœ,œnameœ:œembeddingsœ,œoutput_typesœ:[œEmbeddingsœ]}-OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE{œfieldNameœ:œembeddingœ,œidœ:œOpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvEœ,œinputTypesœ:[œEmbeddingsœ],œtypeœ:œotherœ}",
         "selected": false,
         "source": "EmbeddingModel-aIP4U",
-        "sourceHandle": "{\u0153dataType\u0153:\u0153EmbeddingModel\u0153,\u0153id\u0153:\u0153EmbeddingModel-aIP4U\u0153,\u0153name\u0153:\u0153embeddings\u0153,\u0153output_types\u0153:[\u0153Embeddings\u0153]}",
+        "sourceHandle": "{œdataTypeœ:œEmbeddingModelœ,œidœ:œEmbeddingModel-aIP4Uœ,œnameœ:œembeddingsœ,œoutput_typesœ:[œEmbeddingsœ]}",
         "target": "OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE",
-        "targetHandle": "{\u0153fieldName\u0153:\u0153embedding\u0153,\u0153id\u0153:\u0153OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE\u0153,\u0153inputTypes\u0153:[\u0153Embeddings\u0153],\u0153type\u0153:\u0153other\u0153}"
+        "targetHandle": "{œfieldNameœ:œembeddingœ,œidœ:œOpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvEœ,œinputTypesœ:[œEmbeddingsœ],œtypeœ:œotherœ}"
       },
       {
         "animated": false,
@@ -192,12 +192,12 @@
             "type": "str"
           }
         },
-        "id": "xy-edge__ChatInput-ci8VE{\u0153dataType\u0153:\u0153ChatInput\u0153,\u0153id\u0153:\u0153ChatInput-ci8VE\u0153,\u0153name\u0153:\u0153message\u0153,\u0153output_types\u0153:[\u0153Message\u0153]}-Prompt Template-7kZsI{\u0153fieldName\u0153:\u0153input\u0153,\u0153id\u0153:\u0153Prompt Template-7kZsI\u0153,\u0153inputTypes\u0153:[\u0153Message\u0153],\u0153type\u0153:\u0153str\u0153}",
+        "id": "xy-edge__ChatInput-ci8VE{œdataTypeœ:œChatInputœ,œidœ:œChatInput-ci8VEœ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}-Prompt Template-7kZsI{œfieldNameœ:œinputœ,œidœ:œPrompt Template-7kZsIœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
         "selected": false,
         "source": "ChatInput-ci8VE",
-        "sourceHandle": "{\u0153dataType\u0153:\u0153ChatInput\u0153,\u0153id\u0153:\u0153ChatInput-ci8VE\u0153,\u0153name\u0153:\u0153message\u0153,\u0153output_types\u0153:[\u0153Message\u0153]}",
+        "sourceHandle": "{œdataTypeœ:œChatInputœ,œidœ:œChatInput-ci8VEœ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}",
         "target": "Prompt Template-7kZsI",
-        "targetHandle": "{\u0153fieldName\u0153:\u0153input\u0153,\u0153id\u0153:\u0153Prompt Template-7kZsI\u0153,\u0153inputTypes\u0153:[\u0153Message\u0153],\u0153type\u0153:\u0153str\u0153}"
+        "targetHandle": "{œfieldNameœ:œinputœ,œidœ:œPrompt Template-7kZsIœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
       },
       {
         "animated": false,
@@ -220,12 +220,12 @@
             "type": "str"
           }
         },
-        "id": "xy-edge__Prompt Template-7kZsI{\u0153dataType\u0153:\u0153Prompt Template\u0153,\u0153id\u0153:\u0153Prompt Template-7kZsI\u0153,\u0153name\u0153:\u0153prompt\u0153,\u0153output_types\u0153:[\u0153Message\u0153]}-Agent-Nfw7u{\u0153fieldName\u0153:\u0153input_value\u0153,\u0153id\u0153:\u0153Agent-Nfw7u\u0153,\u0153inputTypes\u0153:[\u0153Message\u0153],\u0153type\u0153:\u0153str\u0153}",
+        "id": "xy-edge__Prompt Template-7kZsI{œdataTypeœ:œPrompt Templateœ,œidœ:œPrompt Template-7kZsIœ,œnameœ:œpromptœ,œoutput_typesœ:[œMessageœ]}-Agent-Nfw7u{œfieldNameœ:œinput_valueœ,œidœ:œAgent-Nfw7uœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
         "selected": false,
         "source": "Prompt Template-7kZsI",
-        "sourceHandle": "{\u0153dataType\u0153:\u0153Prompt Template\u0153,\u0153id\u0153:\u0153Prompt Template-7kZsI\u0153,\u0153name\u0153:\u0153prompt\u0153,\u0153output_types\u0153:[\u0153Message\u0153]}",
+        "sourceHandle": "{œdataTypeœ:œPrompt Templateœ,œidœ:œPrompt Template-7kZsIœ,œnameœ:œpromptœ,œoutput_typesœ:[œMessageœ]}",
         "target": "Agent-Nfw7u",
-        "targetHandle": "{\u0153fieldName\u0153:\u0153input_value\u0153,\u0153id\u0153:\u0153Agent-Nfw7u\u0153,\u0153inputTypes\u0153:[\u0153Message\u0153],\u0153type\u0153:\u0153str\u0153}"
+        "targetHandle": "{œfieldNameœ:œinput_valueœ,œidœ:œAgent-Nfw7uœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
       },
       {
         "animated": false,
@@ -248,12 +248,12 @@
             "type": "other"
           }
         },
-        "id": "xy-edge__OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE{\u0153dataType\u0153:\u0153OpenSearchVectorStoreComponentMultimodalMultiEmbedding\u0153,\u0153id\u0153:\u0153OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE\u0153,\u0153name\u0153:\u0153component_as_tool\u0153,\u0153output_types\u0153:[\u0153Tool\u0153]}-Agent-Nfw7u{\u0153fieldName\u0153:\u0153tools\u0153,\u0153id\u0153:\u0153Agent-Nfw7u\u0153,\u0153inputTypes\u0153:[\u0153Tool\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "id": "xy-edge__OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE{œdataTypeœ:œOpenSearchVectorStoreComponentMultimodalMultiEmbeddingœ,œidœ:œOpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvEœ,œnameœ:œcomponent_as_toolœ,œoutput_typesœ:[œToolœ]}-Agent-Nfw7u{œfieldNameœ:œtoolsœ,œidœ:œAgent-Nfw7uœ,œinputTypesœ:[œToolœ],œtypeœ:œotherœ}",
         "selected": false,
         "source": "OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE",
-        "sourceHandle": "{\u0153dataType\u0153:\u0153OpenSearchVectorStoreComponentMultimodalMultiEmbedding\u0153,\u0153id\u0153:\u0153OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE\u0153,\u0153name\u0153:\u0153component_as_tool\u0153,\u0153output_types\u0153:[\u0153Tool\u0153]}",
+        "sourceHandle": "{œdataTypeœ:œOpenSearchVectorStoreComponentMultimodalMultiEmbeddingœ,œidœ:œOpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvEœ,œnameœ:œcomponent_as_toolœ,œoutput_typesœ:[œToolœ]}",
         "target": "Agent-Nfw7u",
-        "targetHandle": "{\u0153fieldName\u0153:\u0153tools\u0153,\u0153id\u0153:\u0153Agent-Nfw7u\u0153,\u0153inputTypes\u0153:[\u0153Tool\u0153],\u0153type\u0153:\u0153other\u0153}"
+        "targetHandle": "{œfieldNameœ:œtoolsœ,œidœ:œAgent-Nfw7uœ,œinputTypesœ:[œToolœ],œtypeœ:œotherœ}"
       },
       {
         "animated": false,
@@ -276,12 +276,12 @@
             "type": "str"
           }
         },
-        "id": "xy-edge__TextInput-i0a3P{\u0153dataType\u0153:\u0153TextInput\u0153,\u0153id\u0153:\u0153TextInput-i0a3P\u0153,\u0153name\u0153:\u0153text\u0153,\u0153output_types\u0153:[\u0153Message\u0153]}-Prompt Template-7kZsI{\u0153fieldName\u0153:\u0153filter\u0153,\u0153id\u0153:\u0153Prompt Template-7kZsI\u0153,\u0153inputTypes\u0153:[\u0153Message\u0153],\u0153type\u0153:\u0153str\u0153}",
+        "id": "xy-edge__TextInput-i0a3P{œdataTypeœ:œTextInputœ,œidœ:œTextInput-i0a3Pœ,œnameœ:œtextœ,œoutput_typesœ:[œMessageœ]}-Prompt Template-7kZsI{œfieldNameœ:œfilterœ,œidœ:œPrompt Template-7kZsIœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
         "selected": false,
         "source": "TextInput-i0a3P",
-        "sourceHandle": "{\u0153dataType\u0153:\u0153TextInput\u0153,\u0153id\u0153:\u0153TextInput-i0a3P\u0153,\u0153name\u0153:\u0153text\u0153,\u0153output_types\u0153:[\u0153Message\u0153]}",
+        "sourceHandle": "{œdataTypeœ:œTextInputœ,œidœ:œTextInput-i0a3Pœ,œnameœ:œtextœ,œoutput_typesœ:[œMessageœ]}",
         "target": "Prompt Template-7kZsI",
-        "targetHandle": "{\u0153fieldName\u0153:\u0153filter\u0153,\u0153id\u0153:\u0153Prompt Template-7kZsI\u0153,\u0153inputTypes\u0153:[\u0153Message\u0153],\u0153type\u0153:\u0153str\u0153}"
+        "targetHandle": "{œfieldNameœ:œfilterœ,œidœ:œPrompt Template-7kZsIœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
       },
       {
         "animated": false,
@@ -304,12 +304,12 @@
             "type": "str"
           }
         },
-        "id": "xy-edge__TextInput-i0a3P{\u0153dataType\u0153:\u0153TextInput\u0153,\u0153id\u0153:\u0153TextInput-i0a3P\u0153,\u0153name\u0153:\u0153text\u0153,\u0153output_types\u0153:[\u0153Message\u0153]}-OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE{\u0153fieldName\u0153:\u0153filter_expression\u0153,\u0153id\u0153:\u0153OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE\u0153,\u0153inputTypes\u0153:[\u0153Message\u0153],\u0153type\u0153:\u0153str\u0153}",
+        "id": "xy-edge__TextInput-i0a3P{œdataTypeœ:œTextInputœ,œidœ:œTextInput-i0a3Pœ,œnameœ:œtextœ,œoutput_typesœ:[œMessageœ]}-OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE{œfieldNameœ:œfilter_expressionœ,œidœ:œOpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvEœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
         "selected": false,
         "source": "TextInput-i0a3P",
-        "sourceHandle": "{\u0153dataType\u0153:\u0153TextInput\u0153,\u0153id\u0153:\u0153TextInput-i0a3P\u0153,\u0153name\u0153:\u0153text\u0153,\u0153output_types\u0153:[\u0153Message\u0153]}",
+        "sourceHandle": "{œdataTypeœ:œTextInputœ,œidœ:œTextInput-i0a3Pœ,œnameœ:œtextœ,œoutput_typesœ:[œMessageœ]}",
         "target": "OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE",
-        "targetHandle": "{\u0153fieldName\u0153:\u0153filter_expression\u0153,\u0153id\u0153:\u0153OpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvE\u0153,\u0153inputTypes\u0153:[\u0153Message\u0153],\u0153type\u0153:\u0153str\u0153}"
+        "targetHandle": "{œfieldNameœ:œfilter_expressionœ,œidœ:œOpenSearchVectorStoreComponentMultimodalMultiEmbedding-TyvvEœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
       }
     ],
     "nodes": [
@@ -1965,7 +1965,7 @@
                 "trace_as_metadata": true,
                 "track_in_telemetry": false,
                 "type": "str",
-                "value": "You are the OpenRAG Agent. You answer questions using retrieval, reasoning, and tool use.\nYou have access to several tools. Your job is to determine **which tool to use and when**.\n### Available Tools\n- OpenSearch Retrieval Tool:\n  Use this to search the indexed knowledge base. Use when the user asks about product details, internal concepts, processes, architecture, documentation, roadmaps, or anything that may be stored in the index.\n- Conversation History:\n  Use this to maintain continuity when the user is referring to previous turns. \n  Do not treat history as a factual source.\n- Conversation File Context:\n  Use this when the user asks about a document they uploaded or refers directly to its contents.\n- URL Ingestion Tool:\n  Use this **only** when the user explicitly asks you to read, summarize, or analyze the content of a URL.\n  Do not ingest URLs automatically.\n- Calculator / Expression Evaluation Tool:\n  Use this when the user asks to compare numbers, compute estimates, calculate totals, analyze pricing, or answer any question requiring mathematics or quantitative reasoning.\n  If the answer requires arithmetic, call the calculator tool rather than calculating internally.\n### Retrieval Decision Rules\nUse OpenSearch **whenever**:\n1. The question may be answered from internal or indexed data.\n2. The user references team names, product names, release plans, configurations, requirements, or official information.\n3. The user needs a factual, grounded answer.\nDo **not** use retrieval if:\n- The question is purely creative (e.g., storytelling, analogies) or personal preference.\n- The user simply wants text reformatted or rewritten from what is already present in the conversation.\nWhen uncertain \u2192 **Retrieve.** Retrieval is low risk and improves grounding.\n### URL Ingestion Rules\nOnly ingest URLs when the user explicitly says:\n- \"Read this link\"\n- \"Summarize this webpage\"\n- \"What does this site say?\"\n- \"Ingest this URL\"\nIf unclear \u2192 ask a clarifying question.\n### Calculator Usage Rules\nUse the calculator when:\n- Performing arithmetic\n- Estimating totals\n- Comparing values\n- Modeling cost, time, effort, scale, or projections\nDo not perform math internally. **Call the calculator tool instead.**\n### Answer Construction Rules\n1. When asked: \"What is OpenRAG\", answer the following:\n\"OpenRAG is an open-source package for building agentic RAG systems. It supports integration with a wide range of orchestration tools, vector databases, and LLM providers. OpenRAG connects and amplifies three popular, proven open-source projects into one powerful platform:\n**Langflow** \u2013 Langflow is a powerful tool to build and deploy AI agents and MCP servers. [Read more](https://www.langflow.org/)\n**OpenSearch** \u2013 OpenSearch is an open source, search and observability suite that brings order to unstructured data at scale. [Read more](https://opensearch.org/)\n**Docling** \u2013 Docling simplifies document processing with advanced PDF understanding, OCR support, and seamless AI integrations. Parse PDFs, DOCX, PPTX, images & more. [Read more](https://www.docling.ai/)\"\n2. Synthesize retrieved or ingested content in your own words.\n3. Support factual claims with citations in the format:\n   (Source: <document_name_or_id>)\n4. If no supporting evidence is found:\n   Say: \"No relevant supporting sources were found for that request.\"\n5. Never invent facts or hallucinate details.\n6. Be concise, direct, and confident. \n7. Do not reveal internal chain-of-thought."
+                "value": "You are the OpenRAG Agent. You answer questions using retrieval, reasoning, and tool use.\nYou have access to several tools. Your job is to determine **which tool to use and when**.\n\n### Available Tools\n- OpenSearch Retrieval Tool:\n  Use this to search the indexed knowledge base. Use when the user asks about product details, internal concepts, processes, architecture, documentation, roadmaps, or anything that may be stored in the index.\n- Conversation History:\n  Use this to maintain continuity when the user is referring to previous turns. \n  Do not treat history as a factual source.\n- Conversation File Context:\n  Use this when the user asks about a document they uploaded or refers directly to its contents.\n- URL Ingestion Tool:\n  Use this **only** when the user explicitly asks you to read, summarize, or analyze the content of a URL.\n  Do not ingest URLs automatically.\n- Calculator / Expression Evaluation Tool:\n  Use this when the user asks to compare numbers, compute estimates, calculate totals, analyze pricing, or answer any question requiring mathematics or quantitative reasoning.\n  If the answer requires arithmetic, call the calculator tool rather than calculating internally.\n\n### Contract Filling Workflow\nWhen the user says they want to fill/complete a contract (e.g. \"tôi muốn điền hợp đồng X.docx\", \"fill contract X\", \"hoàn thiện hợp đồng X\"):\n\n**Step 1 - Retrieve**: Use the OpenSearch Retrieval Tool to search for the contract by name and read its full content.\n\n**Step 2 - Identify blanks**: Analyze the retrieved content and identify ALL blank fields, placeholders, or missing information. Look for patterns like:\n- Underscores: _____, ........\n- Brackets: [Họ tên], [Địa chỉ], (........)\n- Vietnamese labels followed by blanks: \"Họ và tên:\", \"Địa chỉ:\", \"Số CMND/CCCD:\", etc.\n- Any field that appears empty or needs to be filled\n\n**Step 3 - Ask user**: Present a numbered list of ALL fields that need to be filled. Example:\n\"Tôi đã đọc hợp đồng. Vui lòng cung cấp các thông tin sau:\n1. Họ và tên bên A (đơn vị):\n2. Địa chỉ bên A:\n3. Họ và tên bên B (người lao động):\n4. Ngày sinh bên B:\n...\"\n\n**Step 4 - Collect**: Wait for the user to provide all the information.\n\n**Step 5 - Fill and return**: Fill in all the blanks with the provided information and return the complete filled contract text, maintaining the original structure and formatting.\n\n**Important rules for contract filling**:\n- NEVER skip Step 3. Always ask for information before filling.\n- If the user provides partial information, ask for the remaining fields.\n- Respond in Vietnamese when handling Vietnamese contracts.\n- Keep the original contract structure intact when returning the filled version.\n\n### Retrieval Decision Rules\nUse OpenSearch **whenever**:\n1. The question may be answered from internal or indexed data.\n2. The user references team names, product names, release plans, configurations, requirements, or official information.\n3. The user needs a factual, grounded answer.\nDo **not** use retrieval if:\n- The question is purely creative (e.g., storytelling, analogies) or personal preference.\n- The user simply wants text reformatted or rewritten from what is already present in the conversation.\nWhen uncertain → **Retrieve.** Retrieval is low risk and improves grounding.\n\n### URL Ingestion Rules\nOnly ingest URLs when the user explicitly says:\n- \"Read this link\"\n- \"Summarize this webpage\"\n- \"What does this site say?\"\n- \"Ingest this URL\"\nIf unclear → ask a clarifying question.\n\n### Calculator Usage Rules\nUse the calculator when:\n- Performing arithmetic\n- Estimating totals\n- Comparing values\n- Modeling cost, time, effort, scale, or projections\nDo not perform math internally. **Call the calculator tool instead.**\n\n### Answer Construction Rules\n1. When asked: \"What is OpenRAG\", answer the following:\n\"OpenRAG is an open-source package for building agentic RAG systems. It supports integration with a wide range of orchestration tools, vector databases, and LLM providers. OpenRAG connects and amplifies three popular, proven open-source projects into one powerful platform:\n**Langflow** – Langflow is a powerful tool to build and deploy AI agents and MCP servers. [Read more](https://www.langflow.org/)\n**OpenSearch** – OpenSearch is an open source, search and observability suite that brings order to unstructured data at scale. [Read more](https://opensearch.org/)\n**Docling** – Docling simplifies document processing with advanced PDF understanding, OCR support, and seamless AI integrations. Parse PDFs, DOCX, PPTX, images & more. [Read more](https://www.docling.ai/)\"\n2. Synthesize retrieved or ingested content in your own words.\n3. Support factual claims with citations in the format:\n   (Source: <document_name_or_id>)\n4. If no supporting evidence is found:\n   Say: \"No relevant supporting sources were found for that request.\"\n5. Never invent facts or hallucinate details.\n6. Be concise, direct, and confident. \n7. Do not reveal internal chain-of-thought.\n"
               },
               "tools": {
                 "_input_type": "HandleInput",
@@ -2977,7 +2977,7 @@
                 "show": true,
                 "title_case": false,
                 "type": "code",
-                "value": "from __future__ import annotations\n\nimport json\nfrom typing import Any\n\nfrom lfx.io import (\n    Data,\n    HandleInput,\n    MultilineInput,\n    Output,\n    StrInput,\n)\nfrom lfx.log import logger\nfrom flows.components.opensearch_multimodal import OpenSearchVectorStoreComponentMultimodalMultiEmbedding\n\nclass DualPathOpenSearchComponent(OpenSearchVectorStoreComponentMultimodalMultiEmbedding):\n    display_name = \"Dual-Path OpenSearch Search\"\n    description = \"Search documents with departmental security: detailed results for your department, summarized for others.\"\n    \n    inputs = OpenSearchVectorStoreComponentMultimodalMultiEmbedding.inputs + [\n        StrInput(\n            name=\"user_department\",\n            display_name=\"User Department\",\n            info=\"The department of the current user (usually linked to {{DEPARTMENT}} global variable).\",\n            value=\"\",\n        ),\n        HandleInput(\n            name=\"summarizer_llm\",\n            display_name=\"Summarizer LLM\",\n            info=\"LLM to use for summarizing results from other departments.\",\n            input_types=[\"LanguageModel\"],\n        ),\n        MultilineInput(\n            name=\"summarization_prompt\",\n            display_name=\"Summarization Prompt\",\n            info=\"Prompt to use for summarizing other departments' data.\",\n            value=\"B\u1ea1n l\u00e0 m\u1ed9t tr\u1ee3 l\u00fd b\u1ea3o m\u1eadt. H\u00e3y t\u00f3m t\u1eaft th\u00f4ng tin sau \u0111\u00e2y m\u1ed9t c\u00e1ch t\u1ed5ng qu\u00e1t, kh\u00f4ng ti\u1ebft l\u1ed9 b\u1ea5t k\u1ef3 s\u1ed1 li\u1ec7u c\u1ee5 th\u1ec3, t\u00ean ri\u00eang, ho\u1eb7c chi ti\u1ebft nh\u1ea1y c\u1ea3m n\u00e0o. Ch\u1ec9 \u0111\u01b0a ra c\u00e1c \u00fd ch\u00ednh chung nh\u1ea5t.\",\n        )\n    ]\n    \n    outputs = OpenSearchVectorStoreComponentMultimodalMultiEmbedding.outputs\n\n    async def search_documents(self) -> list[Data]:\n        import time\n        start_time = time.time()\n        \n        query = self.search_query\n        if not query:\n            return []\n\n        # 1. Path 1: Internal Search (Same Department)\n        internal_filter = {\n            \"filter\": [{\"term\": {\"department\": self.user_department}}],\n            \"limit\": self.number_of_results\n        }\n        self.filter_expression = json.dumps(internal_filter)\n        \n        s1_start = time.time()\n        internal_results = super().search_documents()\n        s1_end = time.time()\n        logger.info(f\"[DualPath] Internal search took {s1_end - s1_start:.2f}s (results: {len(internal_results)})\")\n        \n        # 2. Path 2: Global Search (Other Departments) - Limit to 3 for summarization\n        global_limit = 3\n        global_filter = {\n            \"filter\": [{\"must_not\": {\"term\": {\"department\": self.user_department}}}],\n            \"limit\": global_limit\n        }\n        self.filter_expression = json.dumps(global_filter)\n        \n        s2_start = time.time()\n        global_results = super().search_documents()\n        s2_end = time.time()\n        logger.info(f\"[DualPath] Global search took {s2_end - s2_start:.2f}s (results: {len(global_results)})\")\n        \n        # 3. Summarize Global Results\n        summarized_global_data = \"\"\n        if global_results:\n            combined_global_text = \"\\n\\n\".join([d.text for d in global_results])\n            \n            if self.summarizer_llm:\n                prompt = f\"{self.summarization_prompt}\\n\\nD\u1eef li\u1ec7u c\u1ea7n t\u00f3m t\u1eaft:\\n{combined_global_text}\"\n                try:\n                    sum_start = time.time()\n                    summary_resp = await self.summarizer_llm.agenerate([prompt])\n                    summarized_global_data = summary_resp.generations[0][0].text\n                    sum_end = time.time()\n                    logger.info(f\"[DualPath] Summarization took {sum_end - sum_start:.2f}s\")\n                except Exception as e:\n                    logger.error(f\"Error summarizing global results: {e}\")\n                    summarized_global_data = \"[L\u1ed7i t\u00f3m t\u1eaft d\u1eef li\u1ec7u ph\u00f2ng ban kh\u00e1c]\"\n            else:\n                summarized_global_data = \"[Th\u00f4ng tin t\u1eeb ph\u00f2ng ban kh\u00e1c - c\u1ea7n c\u1ea5u h\u00ecnh LLM \u0111\u1ec3 t\u00f3m t\u1eaft]\"\n\n        # 4. Combine\n        final_results = []\n        for r in internal_results:\n            final_results.append(r)\n            \n        if summarized_global_data:\n            summary_node = Data(\n                text=f\"T\u00f3m t\u1eaft th\u00f4ng tin t\u1eeb c\u00e1c ph\u00f2ng ban kh\u00e1c:\\n{summarized_global_data}\",\n                metadata={\"source_type\": \"Global (Summarized)\", \"department\": \"Other\"}\n            )\n            final_results.append(summary_node)\n            \n        total_end = time.time()\n        logger.info(f\"[DualPath] Total dual-path process took {total_end - start_time:.2f}s\")\n        \n        return final_results\n"
+                "value": "from __future__ import annotations\n\nimport json\nfrom typing import Any\n\nfrom lfx.io import (\n    Data,\n    HandleInput,\n    MultilineInput,\n    Output,\n    StrInput,\n)\nfrom lfx.log import logger\nfrom flows.components.opensearch_multimodal import OpenSearchVectorStoreComponentMultimodalMultiEmbedding\n\nclass DualPathOpenSearchComponent(OpenSearchVectorStoreComponentMultimodalMultiEmbedding):\n    display_name = \"Dual-Path OpenSearch Search\"\n    description = \"Search documents with departmental security: detailed results for your department, summarized for others.\"\n    \n    inputs = OpenSearchVectorStoreComponentMultimodalMultiEmbedding.inputs + [\n        StrInput(\n            name=\"user_department\",\n            display_name=\"User Department\",\n            info=\"The department of the current user (usually linked to {{DEPARTMENT}} global variable).\",\n            value=\"\",\n        ),\n        HandleInput(\n            name=\"summarizer_llm\",\n            display_name=\"Summarizer LLM\",\n            info=\"LLM to use for summarizing results from other departments.\",\n            input_types=[\"LanguageModel\"],\n        ),\n        MultilineInput(\n            name=\"summarization_prompt\",\n            display_name=\"Summarization Prompt\",\n            info=\"Prompt to use for summarizing other departments' data.\",\n            value=\"Bạn là một trợ lý bảo mật. Hãy tóm tắt thông tin sau đây một cách tổng quát, không tiết lộ bất kỳ số liệu cụ thể, tên riêng, hoặc chi tiết nhạy cảm nào. Chỉ đưa ra các ý chính chung nhất.\",\n        )\n    ]\n    \n    outputs = OpenSearchVectorStoreComponentMultimodalMultiEmbedding.outputs\n\n    async def search_documents(self) -> list[Data]:\n        import time\n        start_time = time.time()\n        \n        query = self.search_query\n        if not query:\n            return []\n\n        # 1. Path 1: Internal Search (Same Department)\n        internal_filter = {\n            \"filter\": [{\"term\": {\"department\": self.user_department}}],\n            \"limit\": self.number_of_results\n        }\n        self.filter_expression = json.dumps(internal_filter)\n        \n        s1_start = time.time()\n        internal_results = super().search_documents()\n        s1_end = time.time()\n        logger.info(f\"[DualPath] Internal search took {s1_end - s1_start:.2f}s (results: {len(internal_results)})\")\n        \n        # 2. Path 2: Global Search (Other Departments) - Limit to 3 for summarization\n        global_limit = 3\n        global_filter = {\n            \"filter\": [{\"must_not\": {\"term\": {\"department\": self.user_department}}}],\n            \"limit\": global_limit\n        }\n        self.filter_expression = json.dumps(global_filter)\n        \n        s2_start = time.time()\n        global_results = super().search_documents()\n        s2_end = time.time()\n        logger.info(f\"[DualPath] Global search took {s2_end - s2_start:.2f}s (results: {len(global_results)})\")\n        \n        # 3. Summarize Global Results\n        summarized_global_data = \"\"\n        if global_results:\n            combined_global_text = \"\\n\\n\".join([d.text for d in global_results])\n            \n            if self.summarizer_llm:\n                prompt = f\"{self.summarization_prompt}\\n\\nDữ liệu cần tóm tắt:\\n{combined_global_text}\"\n                try:\n                    sum_start = time.time()\n                    summary_resp = await self.summarizer_llm.agenerate([prompt])\n                    summarized_global_data = summary_resp.generations[0][0].text\n                    sum_end = time.time()\n                    logger.info(f\"[DualPath] Summarization took {sum_end - sum_start:.2f}s\")\n                except Exception as e:\n                    logger.error(f\"Error summarizing global results: {e}\")\n                    summarized_global_data = \"[Lỗi tóm tắt dữ liệu phòng ban khác]\"\n            else:\n                summarized_global_data = \"[Thông tin từ phòng ban khác - cần cấu hình LLM để tóm tắt]\"\n\n        # 4. Combine\n        final_results = []\n        for r in internal_results:\n            final_results.append(r)\n            \n        if summarized_global_data:\n            summary_node = Data(\n                text=f\"Tóm tắt thông tin từ các phòng ban khác:\\n{summarized_global_data}\",\n                metadata={\"source_type\": \"Global (Summarized)\", \"department\": \"Other\"}\n            )\n            final_results.append(summary_node)\n            \n        total_end = time.time()\n        logger.info(f\"[DualPath] Total dual-path process took {total_end - start_time:.2f}s\")\n        \n        return final_results\n"
               },
               "docs_metadata": {
                 "_input_type": "TableInput",
@@ -3642,7 +3642,7 @@
                 "required": false,
                 "show": true,
                 "type": "str",
-                "value": "B\u1ea1n l\u00e0 m\u1ed9t tr\u1ee3 l\u00fd b\u1ea3o m\u1eadt. H\u00e3y t\u00f3m t\u1eaft th\u00f4ng tin sau \u0111\u00e2y m\u1ed9t c\u00e1ch t\u1ed5ng qu\u00e1t, kh\u00f4ng ti\u1ebft l\u1ed9 b\u1ea5t k\u1ef3 s\u1ed1 li\u1ec7u c\u1ee5 th\u1ec3, t\u00ean ri\u00eang, ho\u1eb7c chi ti\u1ebft nh\u1ea1y c\u1ea3m n\u00e0o. Ch\u1ec9 \u0111\u01b0a ra c\u00e1c \u00fd ch\u00ednh chung nh\u1ea5t."
+                "value": "Bạn là một trợ lý bảo mật. Hãy tóm tắt thông tin sau đây một cách tổng quát, không tiết lộ bất kỳ số liệu cụ thể, tên riêng, hoặc chi tiết nhạy cảm nào. Chỉ đưa ra các ý chính chung nhất."
               }
             },
             "tool_mode": true

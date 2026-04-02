@@ -159,6 +159,8 @@ services:
       - VLM_ENDPOINT=${VLM_ENDPOINT}
       - VLM_MODEL=${VLM_MODEL}
       - VLM_API_KEY=${VLM_API_KEY}
+      - OPENRAG_API_KEY=orag_s4UYXTQSEDZYCbYfDRUV749ilV6HrF2uq5IyA8Zh230
+      - OPENRAG_URL=http://openrag-backend:8000
       - LANGFLOW_CONFIG_DIR=/app/langflow-data
       - LANGFLOW_DATABASE_URL=${LANGFLOW_DATABASE_URL:-sqlite:////app/langflow-data/langflow.db}
       - LANGFLOW_SECRET_KEY=${LANGFLOW_SECRET_KEY}
