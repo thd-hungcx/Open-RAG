@@ -123,12 +123,16 @@ export async function uploadFileForContext(
 export async function uploadFiles(
   files: File[],
   replace = false,
+  documentCategory?: string,
 ): Promise<{ taskId: string; fileCount: number }> {
   const formData = new FormData();
   for (const file of files) {
     formData.append("file", file);
   }
   formData.append("replace_duplicates", replace.toString());
+  if (documentCategory) {
+    formData.append("document_category", documentCategory);
+  }
 
   const uploadResponse = await fetch("/api/router/upload_ingest", {
     method: "POST",
@@ -164,11 +168,15 @@ export async function uploadFile(
   file: File,
   replace = false,
   createFilter = false,
+  documentCategory?: string,
 ): Promise<UploadFileResult> {
   try {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("replace_duplicates", replace.toString());
+    if (documentCategory) {
+      formData.append("document_category", documentCategory);
+    }
     if (createFilter) {
       formData.append("create_filter", "true");
     }

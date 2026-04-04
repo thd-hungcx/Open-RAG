@@ -36,6 +36,7 @@ export interface ChunkResult {
   index?: number;
   allowed_users?: string[];
   allowed_groups?: string[];
+  category?: string;
 }
 
 export interface File {
@@ -62,6 +63,7 @@ export interface File {
   chunks?: ChunkResult[];
   allowed_users?: string[];
   allowed_groups?: string[];
+  category?: string;
 }
 
 export const useGetSearchQuery = (
@@ -155,6 +157,7 @@ export const useGetSearchQuery = (
           embedding_dimensions?: number;
           allowed_users?: string[];
           allowed_groups?: string[];
+          category?: string;
         }
       >();
 
@@ -189,6 +192,7 @@ export const useGetSearchQuery = (
             embedding_dimensions: chunk.embedding_dimensions,
             allowed_users: chunk.allowed_users || [],
             allowed_groups: chunk.allowed_groups || [],
+            category: chunk.category,
           });
         }
       });
@@ -209,6 +213,7 @@ export const useGetSearchQuery = (
         chunks: file.chunks,
         allowed_users: file.allowed_users || [],
         allowed_groups: file.allowed_groups || [],
+        category: file.category,
       }));
 
       return files;

@@ -148,12 +148,14 @@ async def upload_and_ingest_user_file(
     role: Optional[str] = Form(None),
     shared: str = Form("false"),
     is_confidential: str = Form("false"),
+    document_category: Optional[str] = Form(None),
     langflow_file_service=Depends(get_langflow_file_service),
     session_manager=Depends(get_session_manager),
     task_service=Depends(get_task_service),
     user: User = Depends(get_current_user),
 ):
     """Upload and ingest a file via Langflow (async background task)"""
+    logger.info(f"[DEBUG] document_category received: {repr(document_category)}")
     try:
         settings = None
         tweaks = None
@@ -198,6 +200,7 @@ async def upload_and_ingest_user_file(
                     "role": role,
                     "shared": shared.lower() == "true",
                     "is_confidential": is_confidential.lower() == "true",
+                    "document_category": document_category,
                 },
             )
 

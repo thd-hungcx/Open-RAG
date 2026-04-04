@@ -405,6 +405,18 @@ function SearchPage() {
         }),
     },
     {
+      field: "category",
+      headerName: "Category",
+      sortable: true,
+      width: 140,
+      cellRenderer: ({ data }: CustomCellRendererProps<File>) => {
+        const cat = data?.category;
+        if (!cat) return <span className="text-xs text-muted-foreground">—</span>;
+        const label = cat === "law_reference" ? "📚 Law" : cat === "checklist" ? "✅ Checklist" : cat;
+        return <span className="text-xs">{label}</span>;
+      },
+    },
+    {
       field: "chunkCount",
       headerName: "Chunks",
       sortable: true,

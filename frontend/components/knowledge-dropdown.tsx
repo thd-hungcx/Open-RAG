@@ -134,6 +134,7 @@ export function KnowledgeDropdown() {
     duplicateCount: number;
     unsupportedCount: number;
   } | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const isFolderOverwriteConfirmedRef = useRef(false);
   const [cloudConnectors, setCloudConnectors] = useState<{
     [key: string]: {
@@ -304,7 +305,7 @@ export function KnowledgeDropdown() {
 
         // No duplicate, proceed with upload
         console.log("[Duplicate Check] No duplicate, proceeding with upload");
-        await uploadFile(file, false);
+        await uploadFile(file, false, selectedCategory || undefined);
       } catch (error) {
         console.error("[Duplicate Check] Exception:", error);
         toast.error("Failed to check for duplicates", {
@@ -316,11 +317,11 @@ export function KnowledgeDropdown() {
     resetFileInput();
   };
 
-  const uploadFile = async (file: File, replace: boolean) => {
+  const uploadFile = async (file: File, replace: boolean, category?: string) => {
     setFileUploading(true);
 
     try {
-      await uploadFileUtil(file, replace);
+      await uploadFileUtil(file, replace, false, category);
       refetchTasks();
     } catch (error) {
       // Dispatch event that chat context can listen to
@@ -343,6 +344,7 @@ export function KnowledgeDropdown() {
   const uploadFolderBatches = async (
     filesToUpload: File[],
     replace: boolean,
+    category?: string,
   ) => {
     const batches: File[][] = [];
     for (let i = 0; i < filesToUpload.length; i += uploadBatchSize) {
@@ -355,7 +357,7 @@ export function KnowledgeDropdown() {
 
     for (const batch of batches) {
       try {
-        const result = await uploadFiles(batch, replace);
+        const result = await uploadFiles(batch, replace, category);
         addTask(result.taskId);
       } catch (error) {
         console.error("[Folder Upload] Batch upload failed:", error);
@@ -371,30 +373,19 @@ export function KnowledgeDropdown() {
   const handleOverwriteFile = async () => {
     if (pendingFolderUpload) {
       isFolderOverwriteConfirmedRef.current = true;
-      const { allFiles, duplicateCount, unsupportedCount } =
-        pendingFolderUpload;
-      await uploadFolderBatches(allFiles, true);
-      const unsupportedMessage =
-        unsupportedCount > 0 ? `, skipped ${unsupportedCount} unsupported` : "";
-      toast.success(
-        `Processed ${allFiles.length} file(s), including ${duplicateCount} overwrite(s)${unsupportedMessage}`,
-      );
+      const { allFiles, duplicateCount, unsupportedCount } = pendingFolderUpload;
+      await uploadFolderBatches(allFiles, true, selectedCategory || undefined);
+      const unsupportedMessage = unsupportedCount > 0 ? `, skipped ${unsupportedCount} unsupported` : "";
+      toast.success(`Processed ${allFiles.length} file(s), including ${duplicateCount} overwrite(s)${unsupportedMessage}`);
       resetDuplicateDialogState();
       return;
     }
-
     if (pendingFile) {
-      // Remove the old file from all search query caches before overwriting
       queryClient.setQueriesData({ queryKey: ["search"] }, (oldData: []) => {
         if (!oldData) return oldData;
-        // Filter out the file that's being overwritten
-        return oldData.filter(
-          (file: SearchFile) => file.filename !== pendingFile.name,
-        );
+        return oldData.filter((file: SearchFile) => file.filename !== pendingFile.name);
       });
-
-      await uploadFile(pendingFile, true);
-
+      await uploadFile(pendingFile, true, selectedCategory || undefined);
       resetDuplicateDialogState();
     }
   };
@@ -525,7 +516,7 @@ export function KnowledgeDropdown() {
         return;
       }
 
-      await uploadFolderBatches(nonDuplicateFiles, false);
+      await uploadFolderBatches(nonDuplicateFiles, false, selectedCategory || undefined);
       const unsupportedMessage =
         unsupportedCount > 0 ? `, skipped ${unsupportedCount} unsupported` : "";
       toast.success(
@@ -666,6 +657,17 @@ export function KnowledgeDropdown() {
 
   return (
     <>
+      <div className="flex items-center gap-2">
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="text-xs border rounded px-2 py-1.5 bg-background text-foreground h-9"
+          disabled={isLoading}
+        >
+          <option value="">📄 General</option>
+          <option value="law_reference">📚 Law Reference</option>
+          <option value="checklist">✅ Checklist</option>
+        </select>
       <DropdownMenu onOpenChange={setIsMenuOpen}>
         <DropdownMenuTrigger asChild>
           <Button disabled={isLoading}>
@@ -704,6 +706,7 @@ export function KnowledgeDropdown() {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
 
       <input
         ref={fileInputRef}

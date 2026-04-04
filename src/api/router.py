@@ -40,6 +40,7 @@ async def upload_ingest_router(
     role: Optional[str] = Form(None),
     shared: str = Form("false"),
     is_confidential: str = Form("false"),
+    document_category: Optional[str] = Form(None),
     document_service=Depends(get_document_service),
     langflow_file_service=Depends(get_langflow_file_service),
     session_manager=Depends(get_session_manager),
@@ -52,6 +53,7 @@ async def upload_ingest_router(
     - If DISABLE_INGEST_WITH_LANGFLOW is True: uses traditional OpenRAG upload
     - If DISABLE_INGEST_WITH_LANGFLOW is False (default): uses Langflow upload-ingest via task service
     """
+    logger.info(f"[UPLOAD-1] Request received: files={[f.filename for f in file]}, document_category={repr(document_category)}")
     logger.debug(
         "Router upload_ingest endpoint called",
         disable_langflow_ingest=DISABLE_INGEST_WITH_LANGFLOW,
@@ -81,6 +83,7 @@ async def upload_ingest_router(
         role=role,
         shared=shared.lower() == "true",
         is_confidential=is_confidential.lower() == "true",
+        document_category=document_category,
         langflow_file_service=langflow_file_service,
         session_manager=session_manager,
         task_service=task_service,
@@ -100,12 +103,14 @@ async def _langflow_upload_ingest_task(
     role: Optional[str],
     shared: bool,
     is_confidential: bool,
+    document_category: Optional[str],
     langflow_file_service,
     session_manager,
     task_service,
     user: User,
 ):
     """Task-based langflow upload and ingest for single/multiple files"""
+    logger.info(f"[CAT-DEBUG] router received: document_category={repr(document_category)}, files={[f.filename for f in upload_files]}")
     try:
         if not upload_files:
             return JSONResponse({"error": "Missing files"}, status_code=400)
@@ -147,6 +152,7 @@ async def _langflow_upload_ingest_task(
 
             file_path_to_original_filename = dict(zip(temp_file_paths, original_filenames))
 
+            logger.info(f"[UPLOAD-2] Creating task with document_category={repr(document_category)}")
             task_id = await task_service.create_langflow_upload_task(
                 user_id=user_id,
                 file_paths=temp_file_paths,
@@ -166,6 +172,7 @@ async def _langflow_upload_ingest_task(
                     "role": role,
                     "shared": shared,
                     "is_confidential": is_confidential,
+                    "document_category": document_category,
                 },
             )
 

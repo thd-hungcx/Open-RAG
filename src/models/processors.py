@@ -706,6 +706,7 @@ class LangflowFileProcessor(TaskProcessor):
         role: str = None,
         shared: bool = False,
         is_confidential: bool = False,
+        document_category: str = None,
     ):
         super().__init__()
         self.langflow_file_service = langflow_file_service
@@ -723,6 +724,8 @@ class LangflowFileProcessor(TaskProcessor):
         self.role = role
         self.shared = shared
         self.is_confidential = is_confidential
+        self.document_category = document_category
+        import structlog; structlog.get_logger().info("[UPLOAD-4] LangflowFileProcessor init", document_category=document_category)
 
     async def process_item(
         self, upload_task: UploadTask, item: str, file_task: FileTask
@@ -798,6 +801,7 @@ class LangflowFileProcessor(TaskProcessor):
             final_tweaks = self.tweaks.copy() if self.tweaks else {}
 
             # Process file using langflow service
+            import structlog; structlog.get_logger().info("[UPLOAD-5] Calling upload_and_ingest_file", document_category=self.document_category, file=file_tuple[0] if file_tuple else None)
             result = await self.langflow_file_service.upload_and_ingest_file(
                 file_tuple=file_tuple,
                 session_id=self.session_id,
@@ -813,6 +817,7 @@ class LangflowFileProcessor(TaskProcessor):
                 role=self.role,
                 shared=self.shared,
                 is_confidential=self.is_confidential,
+                document_category=self.document_category,
             )
 
             # Update task with success

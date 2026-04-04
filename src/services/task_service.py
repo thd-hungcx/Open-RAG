@@ -144,6 +144,8 @@ class TaskService:
         from models.processors import LangflowFileProcessor
 
         meta = custom_metadata or {}
+        import structlog; _log = structlog.get_logger()
+        _log.info("[UPLOAD-3] task_service creating processor", document_category=meta.get("document_category"), meta_keys=list(meta.keys()))
         processor = LangflowFileProcessor(
             langflow_file_service=langflow_file_service,
             session_manager=session_manager,
@@ -160,6 +162,7 @@ class TaskService:
             role=meta.get("role"),
             shared=meta.get("shared", False),
             is_confidential=meta.get("is_confidential", False),
+            document_category=meta.get("document_category"),
         )
         return await self.create_custom_task(user_id, file_paths, processor, original_filenames)
 

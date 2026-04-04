@@ -99,6 +99,7 @@ class LangflowFileService:
         role: Optional[str] = None,
         shared: bool = False,
         is_confidential: bool = False,
+        document_category: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Trigger the ingestion flow with provided file paths.
@@ -119,6 +120,8 @@ class LangflowFileService:
         # Pass files via tweaks to File component (File-PSU37 from the flow)
         if file_paths:
             tweaks["DoclingRemote-Dp3PX"] = {"path": file_paths}
+        if document_category:
+            tweaks["AdvancedDynamicFormBuilder-81Exw"] = {"dynamic_category": document_category}
 
         # Pass metadata via tweaks to OpenSearch component
         metadata_tweaks = []
@@ -189,6 +192,7 @@ class LangflowFileService:
         headers["X-Langflow-Global-Var-ROLE"] = str(role) if role else ""
         headers["X-Langflow-Global-Var-SHARED"] = "true" if shared else "false"
         headers["X-Langflow-Global-Var-IS_CONFIDENTIAL"] = "true" if is_confidential else "false"
+        headers["X-Langflow-Global-Var-DOCUMENT_CATEGORY"] = str(document_category) if document_category else ""
         
         # Add provider credentials as global variables for ingestion
         await add_provider_credentials_to_headers(headers, config, flows_service=self.flows_service)
@@ -487,6 +491,7 @@ class LangflowFileService:
         role: Optional[str] = None,
         shared: bool = False,
         is_confidential: bool = False,
+        document_category: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Combined upload, ingest, and delete operation.
@@ -503,6 +508,7 @@ class LangflowFileService:
         Returns:
             Combined result with upload info, ingestion result, and deletion status
         """
+        logger.info(f"[CAT-DEBUG] combined_upload_and_ingest called: document_category={repr(document_category)}, file={file_tuple[0] if file_tuple else None}")
         logger.debug("[LF] Starting combined upload and ingest operation")
 
         # Step 1: Upload the file
@@ -578,8 +584,40 @@ class LangflowFileService:
                 role=role,
                 shared=shared,
                 is_confidential=is_confidential,
+                document_category=document_category,
             )
             logger.debug("[LF] Ingestion completed successfully")
+
+            # Post-process: update category in OpenSearch directly
+            _filename = file_tuple[0] if file_tuple else ""
+            logger.info(f"[CAT-DEBUG] Post-process check: document_category={repr(document_category)}, _filename={repr(_filename)}")
+            if document_category and _filename:
+                try:
+                    from opensearchpy import OpenSearch
+                    from config.settings import OPENSEARCH_HOST, OPENSEARCH_PORT, OPENSEARCH_USERNAME, OPENSEARCH_PASSWORD
+                    from services.search_service import get_index_name
+                    os_client = OpenSearch(
+                        hosts=[{"host": OPENSEARCH_HOST, "port": OPENSEARCH_PORT}],
+                        http_auth=(OPENSEARCH_USERNAME, OPENSEARCH_PASSWORD),
+                        use_ssl=True,
+                        verify_certs=False,
+                        ssl_show_warn=False,
+                    )
+                    import asyncio, time
+                    # Wait for OpenSearch to finish indexing
+                    await asyncio.sleep(3)
+                    result = os_client.update_by_query(
+                        index=get_index_name(),
+                        body={
+                            "script": {"source": "ctx._source.category = params.cat", "lang": "painless", "params": {"cat": document_category}},
+                            "query": {"term": {"filename": _filename}}
+                        },
+                        params={"refresh": "true"}
+                    )
+                    updated = result.get("updated", 0)
+                    logger.info(f"[LF] Updated category='{document_category}' for filename='{_filename}': {updated} docs updated")
+                except Exception as cat_err:
+                    logger.warning(f"[LF] Failed to update category: {cat_err}")
         except Exception as e:
             logger.error(
                 "[LF] Ingestion failed during combined operation",

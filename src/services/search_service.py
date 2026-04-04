@@ -365,6 +365,7 @@ class SearchService:
                 "embedding_dimensions",
                 "allowed_users",
                 "allowed_groups",
+                "category",
             ],
             "size": limit,
         }
@@ -492,6 +493,7 @@ class SearchService:
                     # ACL fields (may be missing for some documents)
                     "allowed_users": source.get("allowed_users", []),
                     "allowed_groups": source.get("allowed_groups", []),
+                    "category": source.get("category"),
                 }
             )
 
