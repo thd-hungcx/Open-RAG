@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from typing import Any
+=======
+from typing import Any, Optional
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
 from .tasks import UploadTask, FileTask
 from utils.logging_config import get_logger
 from utils.file_utils import (
@@ -731,6 +735,12 @@ class LangflowFileProcessor(TaskProcessor):
         delete_after_ingest: bool = True,
         replace_duplicates: bool = False,
         connector_type: str = "local",
+<<<<<<< HEAD
+=======
+        shared: bool = False,
+        is_confidential: bool = False,
+        department: Optional[str] = None,
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
     ):
         super().__init__()
         self.langflow_file_service = langflow_file_service
@@ -745,6 +755,12 @@ class LangflowFileProcessor(TaskProcessor):
         self.delete_after_ingest = delete_after_ingest
         self.replace_duplicates = replace_duplicates
         self.connector_type = connector_type
+<<<<<<< HEAD
+=======
+        self.shared = shared
+        self.is_confidential = is_confidential
+        self.department = department
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
 
     async def process_item(
         self, upload_task: UploadTask, item: str, file_task: FileTask
@@ -831,6 +847,12 @@ class LangflowFileProcessor(TaskProcessor):
                 owner_name=self.owner_name,
                 owner_email=self.owner_email,
                 connector_type=self.connector_type,
+<<<<<<< HEAD
+=======
+                shared=self.shared,
+                is_confidential=self.is_confidential,
+                department=self.department,
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
             )
 
             # Update task with success

@@ -23,6 +23,10 @@ spec:
         checksum/config-flows: {{ include (print $.Template.BasePath "/configmaps/flow-ids-configmap.yaml") . | sha256sum }}
         checksum/config-app: {{ include (print $.Template.BasePath "/configmaps/app-config-configmap.yaml") . | sha256sum }}
         checksum/secret-backend: {{ include (print $.Template.BasePath "/secrets/backend-secret.yaml") . | sha256sum }}
+<<<<<<< HEAD
+=======
+        checksum/secret-dotenv: {{ include (print $.Template.BasePath "/templates/backend/backend-dotenv.yaml") . | sha256sum }}
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
     spec:
       serviceAccountName: {{ include "openrag.serviceAccountName" . }}
       {{- with .Values.podSecurityContext }}
@@ -131,6 +135,7 @@ spec:
             - name: http
               containerPort: 8000
               protocol: TCP
+<<<<<<< HEAD
           env:
             # OpenSearch connection (external SaaS)
             - name: OPENSEARCH_HOST
@@ -317,6 +322,13 @@ spec:
               value: {{ .Values.backend.webhook.baseUrl | quote }}
             {{- end }}
           volumeMounts:
+=======
+          volumeMounts:
+            - name: openrag-dotenv
+              mountPath: /app/.env
+              subPath: .env
+              readOnly: true
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
             {{- if .Values.backend.persistence.documents.enabled }}
             - name: documents
               mountPath: {{ .Values.backend.persistence.documents.mountPath }}
@@ -354,6 +366,7 @@ spec:
                 - /bin/sh
                 - -c
                 - |
+<<<<<<< HEAD
                   # Check OpenSearch health
                   if ! curl -sf -k -u "${OPENSEARCH_USERNAME}:${OPENSEARCH_PASSWORD}" "{{ include "openrag.opensearch.url" . }}" > /dev/null 2>&1; then
                     echo "OpenSearch health check failed"
@@ -372,6 +385,20 @@ spec:
                     exit 1
                   fi
                   
+=======
+                  set -eu
+                  FAILED=0
+
+                  # Langflow health
+                  echo "Checking Langflow..."
+                  if ! curl -sf "{{ include "openrag.langflow.url" . }}/health" >/dev/null 2>&1; then
+                    echo "ERROR: Langflow health check failed at {{ include "openrag.langflow.url" . }}/health"
+                    FAILED=1
+                  else
+                    echo "Langflow: OK"
+                  fi
+
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
                   echo "All health checks passed"
                   exit 0
             initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
@@ -380,6 +407,16 @@ spec:
             failureThreshold: {{ .Values.backend.readinessProbe.failureThreshold }}
           {{- end }}
       volumes:
+<<<<<<< HEAD
+=======
+        - name: openrag-dotenv
+          secret:
+            secretName: {{ include "openrag.fullname" . }}-dotenv
+            defaultMode: 0400
+            items:
+              - key: .env
+                path: .env
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
         {{- if .Values.backend.persistence.documents.enabled }}
         - name: documents
           emptyDir: {}

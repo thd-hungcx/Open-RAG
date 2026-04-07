@@ -1,5 +1,9 @@
 """Utility functions for building Langflow request headers."""
 
+<<<<<<< HEAD
+=======
+import os
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
 from typing import Dict
 from utils.container_utils import transform_localhost_url
 
@@ -64,8 +68,24 @@ async def add_provider_credentials_to_headers(
         headers["X-LANGFLOW-GLOBAL-VAR-OLLAMA_BASE_URL"] = str(ollama_endpoint)
 
     # Inject OpenSearch URL so Langflow flows always use the correct endpoint
+<<<<<<< HEAD
     from config.settings import OPENSEARCH_HOST, OPENSEARCH_PORT
     headers["X-LANGFLOW-GLOBAL-VAR-OPENSEARCH_URL"] = f"https://{OPENSEARCH_HOST}:{OPENSEARCH_PORT}"
+=======
+    from config.settings import LANGFLOW_OPENSEARCH_HOST, LANGFLOW_OPENSEARCH_PORT
+    headers["X-LANGFLOW-GLOBAL-VAR-OPENSEARCH_URL"] = f"https://{LANGFLOW_OPENSEARCH_HOST}:{LANGFLOW_OPENSEARCH_PORT}"
+
+    vlm_endpoint = os.getenv("VLM_ENDPOINT")
+    vlm_model = os.getenv("VLM_MODEL")
+    vlm_api_key = os.getenv("VLM_API_KEY")
+
+    if vlm_endpoint:
+        headers["X-LANGFLOW-GLOBAL-VAR-VLM_ENDPOINT"] = vlm_endpoint
+    if vlm_model:
+        headers["X-LANGFLOW-GLOBAL-VAR-VLM_MODEL"] = vlm_model
+    if vlm_api_key:
+        headers["X-LANGFLOW-GLOBAL-VAR-VLM_API_KEY"] = vlm_api_key
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
 
     # IBM mode: inject OpenSearch Basic credentials as separate global vars
     from config.settings import IBM_AUTH_ENABLED
@@ -120,8 +140,24 @@ async def build_mcp_global_vars_from_config(
         global_vars["SELECTED_EMBEDDING_MODEL"] = config.knowledge.embedding_model
 
     # Inject OpenSearch URL so MCP servers always use the correct endpoint
+<<<<<<< HEAD
     from config.settings import OPENSEARCH_HOST, OPENSEARCH_PORT
     global_vars["OPENSEARCH_URL"] = f"https://{OPENSEARCH_HOST}:{OPENSEARCH_PORT}"
+=======
+    from config.settings import LANGFLOW_OPENSEARCH_HOST, LANGFLOW_OPENSEARCH_PORT
+    global_vars["OPENSEARCH_URL"] = f"https://{LANGFLOW_OPENSEARCH_HOST}:{LANGFLOW_OPENSEARCH_PORT}"
+
+    vlm_endpoint = os.getenv("VLM_ENDPOINT")
+    vlm_model = os.getenv("VLM_MODEL")
+    vlm_api_key = os.getenv("VLM_API_KEY")
+
+    if vlm_endpoint:
+        global_vars["VLM_ENDPOINT"] = vlm_endpoint
+    if vlm_model:
+        global_vars["VLM_MODEL"] = vlm_model
+    if vlm_api_key:
+        global_vars["VLM_API_KEY"] = vlm_api_key
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
 
     # IBM mode: inject OpenSearch Basic credentials as separate global vars
     from config.settings import IBM_AUTH_ENABLED

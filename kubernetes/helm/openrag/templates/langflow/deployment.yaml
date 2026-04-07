@@ -20,6 +20,10 @@ spec:
       annotations:
         checksum/secret: {{ include (print $.Template.BasePath "/secrets/langflow-secret.yaml") . | sha256sum }}
         checksum/config: {{ include (print $.Template.BasePath "/configmaps/flow-ids-configmap.yaml") . | sha256sum }}
+<<<<<<< HEAD
+=======
+        checksum/dotenv: {{ include (print $.Template.BasePath "/templates/langflow/langflow-dotenv.yaml") . | sha256sum }}
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
     spec:
       serviceAccountName: {{ include "openrag.serviceAccountName" . }}
 
@@ -121,6 +125,7 @@ spec:
               containerPort: 7860
               protocol: TCP
 
+<<<<<<< HEAD
           env:
             # Langflow core settings
             - name: LANGFLOW_DATABASE_URL
@@ -284,6 +289,15 @@ spec:
             {{- end }}
 
           volumeMounts:
+=======
+          command: ["langflow", "run", "--env-file", "/app/.env"]
+
+          volumeMounts:
+            - name: openrag-langflow-dotenv
+              mountPath: /app/.env
+              subPath: .env
+              readOnly: true
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
             - name: langflow-data
               mountPath: {{ .Values.langflow.persistence.mountPath }}
 
@@ -313,6 +327,16 @@ spec:
           {{- end }}
 
       volumes:
+<<<<<<< HEAD
+=======
+        - name: openrag-langflow-dotenv
+          secret:
+            secretName: {{ include "openrag.fullname" . }}-langflow-dotenv
+            defaultMode: 0400
+            items:
+              - key: .env
+                path: .env
+>>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
         - name: langflow-data
           {{- if .Values.langflow.persistence.enabled }}
           persistentVolumeClaim:
