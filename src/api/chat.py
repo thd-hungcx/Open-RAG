@@ -1,10 +1,6 @@
 from typing import Optional, Any, Dict
 
-<<<<<<< HEAD
-from fastapi import Depends
-=======
 from fastapi import Depends, Request
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse, StreamingResponse
 from utils.logging_config import get_logger
@@ -23,11 +19,8 @@ class ChatBody(BaseModel):
     limit: int = 10
     scoreThreshold: float = 0
     filter_id: Optional[str] = None
-<<<<<<< HEAD
-=======
     role: Optional[str] = None
     department: Optional[str] = None
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
 
 
 async def chat_endpoint(
@@ -82,10 +75,7 @@ async def chat_endpoint(
 
 async def langflow_endpoint(
     body: ChatBody,
-<<<<<<< HEAD
-=======
     request: Request,
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
     chat_service=Depends(get_chat_service),
     session_manager=Depends(get_session_manager),
     user: User = Depends(get_current_user),
@@ -96,8 +86,6 @@ async def langflow_endpoint(
 
     jwt_token = user.jwt_token
 
-<<<<<<< HEAD
-=======
     role = body.role
     department = body.department
     if role is None:
@@ -105,7 +93,6 @@ async def langflow_endpoint(
     if department is None:
         department = request.headers.get("x-user-department")
 
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
     if body.filters:
         from auth_context import set_search_filters
         set_search_filters(body.filters)
@@ -124,11 +111,8 @@ async def langflow_endpoint(
                     previous_response_id=body.previous_response_id,
                     stream=True,
                     filter_id=body.filter_id,
-<<<<<<< HEAD
-=======
                     role=role,
                     department=department,
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
                 ),
                 media_type="text/event-stream",
                 headers={
@@ -146,11 +130,8 @@ async def langflow_endpoint(
                 previous_response_id=body.previous_response_id,
                 stream=False,
                 filter_id=body.filter_id,
-<<<<<<< HEAD
-=======
                 role=body.role,
                 department=body.department,
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
             )
             return JSONResponse(result)
 

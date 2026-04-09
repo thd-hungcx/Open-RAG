@@ -21,14 +21,11 @@ logger = get_logger(__name__)
 # Environment variables
 OPENSEARCH_HOST = os.getenv("OPENSEARCH_HOST", "localhost")
 OPENSEARCH_PORT = get_env_int("OPENSEARCH_PORT", 9200)
-<<<<<<< HEAD
-=======
 
 # Optional: Langflow-specific OpenSearch endpoint
 LANGFLOW_OPENSEARCH_HOST = os.getenv("LANGFLOW_OPENSEARCH_HOST", OPENSEARCH_HOST)
 LANGFLOW_OPENSEARCH_PORT = get_env_int("LANGFLOW_OPENSEARCH_PORT", OPENSEARCH_PORT)
 
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
 OPENSEARCH_USERNAME = os.getenv("OPENSEARCH_USERNAME", "admin")
 OPENSEARCH_PASSWORD = os.getenv("OPENSEARCH_PASSWORD")
 LANGFLOW_URL = os.getenv("LANGFLOW_URL", "http://localhost:7860")
@@ -343,6 +340,30 @@ class AppClients:
         self._client_init_lock = __import__('threading').Lock()  # Lock for thread-safe initialization
         self.docling_http_client = None
 
+    def _create_langflow_http_client(self) -> httpx.AsyncClient:
+        return httpx.AsyncClient(
+            base_url=LANGFLOW_URL,
+            timeout=httpx.Timeout(
+                timeout=LANGFLOW_TIMEOUT,
+                connect=LANGFLOW_CONNECT_TIMEOUT,
+                read=LANGFLOW_TIMEOUT,
+                write=LANGFLOW_CONNECT_TIMEOUT,
+                pool=LANGFLOW_CONNECT_TIMEOUT,
+            ),
+        )
+
+    async def _recreate_langflow_http_client(self):
+        old_client = self.langflow_http_client
+        self.langflow_http_client = self._create_langflow_http_client()
+        if old_client is not None:
+            try:
+                await old_client.aclose()
+            except Exception as close_error:
+                logger.debug(
+                    "Failed to close previous Langflow HTTP client during recreate",
+                    error=str(close_error),
+                )
+
     async def initialize(self):
         os_auth = None if IBM_AUTH_ENABLED else (OPENSEARCH_USERNAME, OPENSEARCH_PASSWORD)
 
@@ -381,16 +402,7 @@ class AppClients:
         # Initialize Langflow HTTP client with extended timeouts for large documents
         # Must be created before wait_for_langflow / get_langflow_api_key
         # Use explicit timeout configuration to handle large PDF ingestion (300+ pages)
-        self.langflow_http_client = httpx.AsyncClient(
-            base_url=LANGFLOW_URL,
-            timeout=httpx.Timeout(
-                timeout=LANGFLOW_TIMEOUT,  # Total timeout
-                connect=LANGFLOW_CONNECT_TIMEOUT,  # Connection timeout
-                read=LANGFLOW_TIMEOUT,  # Read timeout (most important for large PDFs)
-                write=LANGFLOW_CONNECT_TIMEOUT,  # Write timeout
-                pool=LANGFLOW_CONNECT_TIMEOUT,  # Pool timeout
-            )
-        )
+        self.langflow_http_client = self._create_langflow_http_client()
         logger.info(
             "Initialized Langflow HTTP client with extended timeouts",
             timeout_seconds=LANGFLOW_TIMEOUT,
@@ -655,6 +667,7 @@ class AppClients:
         """Central method for all Langflow API requests.
 
         Retries once with a fresh API key on auth failures (401/403).
+        Retries once with a recreated HTTP client on closed-loop runtime errors.
         """
         api_key = await get_langflow_api_key()
         if not api_key:
@@ -671,9 +684,24 @@ class AppClients:
 
         url = f"{LANGFLOW_URL}{endpoint}"
 
-        response = await self.langflow_http_client.request(
-            method=method, url=url, headers=headers, **kwargs
-        )
+        async def _request_with_recreate_on_closed_loop():
+            try:
+                return await self.langflow_http_client.request(
+                    method=method, url=url, headers=headers, **kwargs
+                )
+            except RuntimeError as e:
+                if "Event loop is closed" not in str(e):
+                    raise
+                logger.warning(
+                    "Langflow HTTP client hit closed event loop; recreating client and retrying",
+                    endpoint=endpoint,
+                )
+                await self._recreate_langflow_http_client()
+                return await self.langflow_http_client.request(
+                    method=method, url=url, headers=headers, **kwargs
+                )
+
+        response = await _request_with_recreate_on_closed_loop()
 
         # Retry once with a fresh API key on auth failure
         if response.status_code in (401, 403):
@@ -685,9 +713,7 @@ class AppClients:
             api_key = await get_langflow_api_key(force_regenerate=True)
             if api_key:
                 headers["x-api-key"] = api_key
-                response = await self.langflow_http_client.request(
-                    method=method, url=url, headers=headers, **kwargs
-                )
+                response = await _request_with_recreate_on_closed_loop()
 
         return response
 

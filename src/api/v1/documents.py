@@ -37,12 +37,9 @@ async def ingest_endpoint(
     delete_after_ingest: str = Form("true"),
     replace_duplicates: str = Form("true"),
     create_filter: str = Form("false"),
-<<<<<<< HEAD
-=======
     shared: str = Form("false"),
     is_confidential: str = Form("false"),
     department: Optional[str] = Form(None),
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
     document_service=Depends(get_document_service),
     langflow_file_service=Depends(get_langflow_file_service),
     session_manager=Depends(get_session_manager),
@@ -64,12 +61,9 @@ async def ingest_endpoint(
         delete_after_ingest=delete_after_ingest,
         replace_duplicates=replace_duplicates,
         create_filter=create_filter,
-<<<<<<< HEAD
-=======
         shared=shared,
         is_confidential=is_confidential,
         department=department,
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
         document_service=document_service,
         langflow_file_service=langflow_file_service,
         session_manager=session_manager,
