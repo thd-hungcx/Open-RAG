@@ -1597,7 +1597,10 @@ async def create_app():
     )
 
     # Chat endpoints
-    app.add_api_route("/chat", chat.chat_endpoint, methods=["POST"], tags=["internal"])
+    # TODO: revert to chat.chat_endpoint when OpenAI agent is configured
+    app.add_api_route(
+        "/chat", chat.langflow_endpoint, methods=["POST"], tags=["internal"]
+    )
     app.add_api_route(
         "/langflow", chat.langflow_endpoint, methods=["POST"], tags=["internal"]
     )

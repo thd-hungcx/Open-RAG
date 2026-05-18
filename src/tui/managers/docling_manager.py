@@ -42,7 +42,10 @@ class DoclingManager:
         # PID file to track docling-serve across sessions (centralized in ~/.openrag/tui/)
         from utils.paths import get_tui_dir
 
-        self._pid_file = get_tui_dir() / ".docling.pid"
+        self._tui_dir = get_tui_dir()
+        self._pid_file = self._tui_dir / ".docling.pid"
+        self._stdout_log_file = self._tui_dir / "docling-serve.stdout.log"
+        self._stderr_log_file = self._tui_dir / "docling-serve.stderr.log"
 
         # Log storage - simplified, no queue
         self._log_buffer: List[str] = []
@@ -98,6 +101,19 @@ class DoclingManager:
         except OSError:
             return False
 
+    def _is_port_listening(self) -> bool:
+        """Check if docling-serve is accepting TCP connections."""
+        import socket
+
+        host = "127.0.0.1" if self._host == "0.0.0.0" else self._host
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.settimeout(0.5)
+                return sock.connect_ex((host, self._port)) == 0
+        except Exception as e:
+            logger.debug(f"Error checking docling port {self._port}: {e}")
+            return False
+
     def _recover_from_pid_file(self) -> None:
         """Try to recover connection to existing docling-serve process from PID file."""
         pid = self._load_pid()
@@ -127,17 +143,19 @@ class DoclingManager:
                 self._log_buffer = self._log_buffer[-self._max_log_lines :]
 
     def is_running(self) -> bool:
-        """Check if docling serve is running (by PID only)."""
+        """Check if docling serve is running and accepting connections."""
         # Check if we have a direct process handle
         if self._process is not None and self._process.poll() is None:
-            self._running = True
-            self._external_process = False
-            self._starting = False  # Clear starting flag if service is running
-            return True
+            if self._is_port_listening():
+                self._running = True
+                self._external_process = False
+                self._starting = False  # Clear starting flag if service is running
+                return True
+            return False
 
         # Check if we have a PID from file
         pid = self._load_pid()
-        if pid is not None and self._is_process_running(pid):
+        if pid is not None and self._is_process_running(pid) and self._is_port_listening():
             self._running = True
             self._external_process = True
             self._starting = False  # Clear starting flag if service is running
@@ -315,13 +333,16 @@ class DoclingManager:
 
             self._add_log_entry(f"Starting process: {' '.join(cmd)}")
 
-            # Start as subprocess
+            stdout_log = self._stdout_log_file.open("a", encoding="utf-8")
+            stderr_log = self._stderr_log_file.open("a", encoding="utf-8")
+
+            # Start as detached subprocess so docling-serve survives when this
+            # short-lived CLI command returns. Log files avoid orphaned pipes.
             self._process = subprocess.Popen(
                 cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-                bufsize=0,  # Unbuffered for real-time output
+                stdout=stdout_log,
+                stderr=stderr_log,
+                start_new_session=True,
             )
 
             self._running = True
@@ -330,8 +351,8 @@ class DoclingManager:
             # Save the PID to file for persistence
             self._save_pid(self._process.pid)
 
-            # Start a thread to capture output
-            self._start_output_capture()
+            self._add_log_entry(f"stdout log: {self._stdout_log_file}")
+            self._add_log_entry(f"stderr log: {self._stderr_log_file}")
 
             # Wait for the process to start and begin listening
             self._add_log_entry(
@@ -407,10 +428,14 @@ class DoclingManager:
                     f"Docling serve process exited immediately (code: {return_code})",
                 )
 
-            # If we get here and the process is still running but not listening yet,
-            # clear the starting flag anyway (it's running, just not ready)
-            if self._process.poll() is None:
+            if self._process.poll() is None and not self._is_port_listening():
+                self._running = False
                 self._starting = False
+                return (
+                    False,
+                    f"Docling serve did not start listening on {self._host}:{self._port} within {timeout}s. "
+                    f"See {self._stderr_log_file} and {self._stdout_log_file}.",
+                )
 
             display_host = "localhost" if self._host == "0.0.0.0" else self._host
             return True, f"Docling serve starting on http://{display_host}:{port}"

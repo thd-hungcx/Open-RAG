@@ -18,6 +18,7 @@ from dependencies import (
 )
 from session_manager import User
 from utils.logging_config import get_logger
+from utils.index_utils import resolve_index_name
 
 logger = get_logger(__name__)
 
@@ -60,12 +61,48 @@ async def upload_ingest_router(
         logger.debug("Routing to traditional OpenRAG upload")
         # Route to traditional upload — just take the first file
         from api.upload import upload as traditional_upload_fn
+
         return await traditional_upload_fn(
             file=file[0] if file else None,
             document_service=document_service,
             session_manager=session_manager,
             user=user,
         )
+
+    # Resolve dynamic index name
+    from config.settings import get_openrag_config
+
+    fallback_index = get_openrag_config().knowledge.index_name
+    try:
+        resolved_index = resolve_index_name(
+            department=department,
+            user_id=user.user_id,
+            fallback_index=fallback_index,
+        )
+    except ValueError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+
+    logger.debug(
+        "Routing to Langflow upload-ingest pipeline via task service",
+        resolved_index=resolved_index,
+    )
+    return await _langflow_upload_ingest_task(
+        upload_files=file,
+        session_id=session_id,
+        settings_json=settings_json,
+        tweaks_json=tweaks_json,
+        delete_after_ingest=delete_after_ingest.lower() == "true",
+        replace_duplicates=replace_duplicates.lower() == "true",
+        create_filter=create_filter.lower() == "true",
+        shared=_parse_bool_form(shared),
+        is_confidential=_parse_bool_form(is_confidential),
+        department=department,
+        resolved_index=resolved_index,
+        langflow_file_service=langflow_file_service,
+        session_manager=session_manager,
+        task_service=task_service,
+        user=user,
+    )
 
     logger.debug("Routing to Langflow upload-ingest pipeline via task service")
     return await _langflow_upload_ingest_task(
@@ -97,6 +134,7 @@ async def _langflow_upload_ingest_task(
     shared: bool,
     is_confidential: bool,
     department: Optional[str],
+    resolved_index: str,
     langflow_file_service,
     session_manager,
     task_service,
@@ -114,13 +152,17 @@ async def _langflow_upload_ingest_task(
             try:
                 settings = json.loads(settings_json)
             except json.JSONDecodeError as e:
-                return JSONResponse({"error": f"Invalid settings JSON: {e}"}, status_code=400)
+                return JSONResponse(
+                    {"error": f"Invalid settings JSON: {e}"}, status_code=400
+                )
 
         if tweaks_json:
             try:
                 tweaks = json.loads(tweaks_json)
             except json.JSONDecodeError as e:
-                return JSONResponse({"error": f"Invalid tweaks JSON: {e}"}, status_code=400)
+                return JSONResponse(
+                    {"error": f"Invalid tweaks JSON: {e}"}, status_code=400
+                )
 
         user_id = user.user_id
         user_name = user.name
@@ -142,7 +184,9 @@ async def _langflow_upload_ingest_task(
                     f.write(content)
                 temp_file_paths.append(temp_path)
 
-            file_path_to_original_filename = dict(zip(temp_file_paths, original_filenames))
+            file_path_to_original_filename = dict(
+                zip(temp_file_paths, original_filenames)
+            )
 
             task_id = await task_service.create_langflow_upload_task(
                 user_id=user_id,
@@ -161,6 +205,7 @@ async def _langflow_upload_ingest_task(
                 shared=shared,
                 is_confidential=is_confidential,
                 department=department,
+                resolved_index=resolved_index,
             )
 
             return JSONResponse(
@@ -169,13 +214,30 @@ async def _langflow_upload_ingest_task(
                     "message": f"Langflow upload task created for {len(upload_files)} file(s)",
                     "file_count": len(upload_files),
                     "create_filter": create_filter,
-                    "filename": original_filenames[0] if len(original_filenames) == 1 else None,
+                    "filename": original_filenames[0]
+                    if len(original_filenames) == 1
+                    else None,
+                    "resolved_index_name": resolved_index,
+                },
+                status_code=202,
+            )
+
+            return JSONResponse(
+                {
+                    "task_id": task_id,
+                    "message": f"Langflow upload task created for {len(upload_files)} file(s)",
+                    "file_count": len(upload_files),
+                    "create_filter": create_filter,
+                    "filename": original_filenames[0]
+                    if len(original_filenames) == 1
+                    else None,
                 },
                 status_code=202,
             )
 
         except Exception:
             from utils.file_utils import safe_unlink
+
             for temp_path in temp_file_paths:
                 safe_unlink(temp_path)
             raise
@@ -183,8 +245,12 @@ async def _langflow_upload_ingest_task(
     except Exception as e:
         logger.error("Task-based langflow upload_ingest failed", error=str(e))
         import traceback
+
         logger.error("Full traceback", traceback=traceback.format_exc())
         error_msg = str(e)
-        if "AuthenticationException" in error_msg or "access denied" in error_msg.lower():
+        if (
+            "AuthenticationException" in error_msg
+            or "access denied" in error_msg.lower()
+        ):
             return JSONResponse({"error": error_msg}, status_code=403)
         return JSONResponse({"error": error_msg}, status_code=500)

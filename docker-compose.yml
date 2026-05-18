@@ -10,11 +10,8 @@ services:
     environment:
       - discovery.type=single-node
       - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_PASSWORD}
-<<<<<<< HEAD
     extra_hosts:
       - "host.docker.internal:host-gateway"
-=======
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
     # Run security setup in background after OpenSearch starts
     command: >
       bash -c "
@@ -54,7 +51,6 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     container_name: openrag-backend
-<<<<<<< HEAD
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -63,13 +59,6 @@ services:
       - DD_TRACE_ENABLED=false
       - DD_PROFILING_ENABLED=false
       - TRACER_ENABLED=false
-=======
-    ports:
-      - "8008:8008"
-    depends_on:
-      - langflow
-    environment:
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
       - OPENSEARCH_HOST=${OPENSEARCH_HOST:-opensearch}
       - LANGFLOW_URL=http://langflow:7860
       - LANGFLOW_PUBLIC_URL=${LANGFLOW_PUBLIC_URL}
@@ -83,11 +72,8 @@ services:
       - INGEST_SAMPLE_DATA=${INGEST_SAMPLE_DATA:-true}
       - NUDGES_FLOW_ID=${NUDGES_FLOW_ID}
       - OPENSEARCH_PORT=${OPENSEARCH_PORT:-9200}
-<<<<<<< HEAD
-=======
       - LANGFLOW_OPENSEARCH_HOST=${LANGFLOW_OPENSEARCH_HOST:-${OPENSEARCH_HOST:-opensearch}}
       - LANGFLOW_OPENSEARCH_PORT=${LANGFLOW_OPENSEARCH_PORT:-${OPENSEARCH_PORT:-9200}}
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
       - OPENSEARCH_USERNAME=${OPENSEARCH_USERNAME:-admin}
       - OPENSEARCH_PASSWORD=${OPENSEARCH_PASSWORD}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -96,12 +82,9 @@ services:
       - WATSONX_ENDPOINT=${WATSONX_ENDPOINT}
       - WATSONX_PROJECT_ID=${WATSONX_PROJECT_ID}
       - OLLAMA_ENDPOINT=${OLLAMA_ENDPOINT}
-<<<<<<< HEAD
-=======
       - VLM_ENDPOINT=${VLM_ENDPOINT}
       - VLM_MODEL=${VLM_MODEL}
       - VLM_API_KEY=${VLM_API_KEY}
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
       - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET}
       - MICROSOFT_GRAPH_OAUTH_CLIENT_ID=${MICROSOFT_GRAPH_OAUTH_CLIENT_ID}
@@ -117,7 +100,6 @@ services:
       - IBM_COS_HMAC_ACCESS_KEY_ID=${IBM_COS_HMAC_ACCESS_KEY_ID}
       - IBM_COS_HMAC_SECRET_ACCESS_KEY=${IBM_COS_HMAC_SECRET_ACCESS_KEY}
       - IBM_COS_AUTH_ENDPOINT=${IBM_COS_AUTH_ENDPOINT}
-      - OPENSEARCH_INDEX_NAME=${OPENSEARCH_INDEX_NAME:-documents}
       - LANGFLOW_KEY=${LANGFLOW_KEY}
       - LANGFLOW_KEY_RETRIES=${LANGFLOW_KEY_RETRIES:-15}
       - LANGFLOW_KEY_RETRY_DELAY=${LANGFLOW_KEY_RETRY_DELAY:-2.0}
@@ -125,10 +107,7 @@ services:
       - LOG_FORMAT=${LOG_FORMAT}
       - SERVICE_NAME=${SERVICE_NAME}
       - SESSION_SECRET=${SESSION_SECRET}
-<<<<<<< HEAD
-=======
       - OPENRAG_ENCRYPTION_KEY=${OPENRAG_ENCRYPTION_KEY}
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - NO_COLOR=${NO_COLOR:-}
       - ACCESS_LOG=${ACCESS_LOG:-true}
@@ -137,18 +116,14 @@ services:
       - INGESTION_TIMEOUT=${INGESTION_TIMEOUT:-3600}
       - UPLOAD_BATCH_SIZE=${UPLOAD_BATCH_SIZE:-25}
       - MAX_WORKERS=${MAX_WORKERS:-4}
+    ports:
+      - "${OPENRAG_BACKEND_PORT:-18000}:8000"
     volumes:
       - ${OPENRAG_DOCUMENTS_PATH:-./openrag-documents}:/app/openrag-documents:U,z
       - ${OPENRAG_KEYS_PATH:-./keys}:/app/keys:U,z
       - ${OPENRAG_FLOWS_PATH:-./flows}:/app/flows:U,z
       - ${OPENRAG_CONFIG_PATH:-./config}:/app/config:U,z
       - ${OPENRAG_DATA_PATH:-./data}:/app/data:U,z
-<<<<<<< HEAD
-=======
-    # Linux: Docker Engine does not auto-inject host.docker.internal; map it to the host gateway
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
 
   openrag-frontend:
     image: langflowai/openrag-frontend:${OPENRAG_VERSION:-latest}
@@ -156,11 +131,8 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     container_name: openrag-frontend
-<<<<<<< HEAD
     extra_hosts:
       - "host.docker.internal:host-gateway"
-=======
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
     depends_on:
       - openrag-backend
     environment:
@@ -169,51 +141,36 @@ services:
       - "${FRONTEND_PORT:-3000}:3000"
 
   langflow:
-<<<<<<< HEAD
     volumes:
       - ${OPENRAG_FLOWS_PATH:-./flows}:/app/flows:U,z
       - ${LANGFLOW_DATA_PATH:-./langflow-data}:/app/langflow-data:U,z
-=======
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
     image: langflowai/openrag-langflow:${OPENRAG_VERSION:-latest}
     build:
       context: .
       dockerfile: Dockerfile.langflow
     container_name: langflow
-<<<<<<< HEAD
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
       - "${LANGFLOW_PORT:-7860}:7860"
-=======
-    ports:
-      - "${LANGFLOW_PORT:-7860}:7860"
-    volumes:
-      - ${OPENRAG_FLOWS_PATH:-./flows}:/app/flows:U,z
-      - ${LANGFLOW_DATA_PATH:-./langflow-data}:/app/langflow-data:U,z
-    # Linux: Docker Engine does not auto-inject host.docker.internal; map it to the host gateway
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
     environment:
       - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
       - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
       - LANGFUSE_HOST=${LANGFUSE_HOST:-}
-      - LANGFLOW_DEACTIVATE_TRACING
+      - LANGFLOW_DEACTIVATE_TRACING=${LANGFLOW_DEACTIVATE_TRACING:-true}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - WATSONX_APIKEY=${WATSONX_API_KEY}
       - WATSONX_URL=${WATSONX_URL:-${WATSONX_ENDPOINT}}
       - WATSONX_PROJECT_ID=${WATSONX_PROJECT_ID}
       - OLLAMA_BASE_URL=${OLLAMA_ENDPOINT}
-<<<<<<< HEAD
-=======
       - VLM_ENDPOINT=${VLM_ENDPOINT}
       - VLM_MODEL=${VLM_MODEL}
       - VLM_API_KEY=${VLM_API_KEY}
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
       - LANGFLOW_CONFIG_DIR=/app/langflow-data
       - LANGFLOW_DATABASE_URL=${LANGFLOW_DATABASE_URL:-sqlite:////app/langflow-data/langflow.db}
+      - LANGFLOW_DB_CONNECT_TIMEOUT=${LANGFLOW_DB_CONNECT_TIMEOUT:-30}
+      - LANGFLOW_SQLITE_PRAGMAS=${LANGFLOW_SQLITE_PRAGMAS:-{"busy_timeout":30000,"journal_mode":"WAL"}}
       - LANGFLOW_SECRET_KEY=${LANGFLOW_SECRET_KEY}
       - JWT=None
       - OWNER=None
@@ -225,30 +182,18 @@ services:
       - SOURCE_URL=None
       - ALLOWED_USERS=[]
       - ALLOWED_GROUPS=[]
-      - OPENRAG-QUERY-FILTER="{}"
-<<<<<<< HEAD
-      - OPENSEARCH_PASSWORD=${OPENSEARCH_PASSWORD}
-      - OPENSEARCH_HOST=${OPENSEARCH_HOST:-opensearch}
-      - OPENSEARCH_PORT=${OPENSEARCH_PORT:-9200}
-      - OPENSEARCH_URL=https://${OPENSEARCH_HOST:-opensearch}:${OPENSEARCH_PORT:-9200}
-=======
+      - OPENRAG-QUERY-FILTER={"filter":[{"match_all":{}}]}
       - OPENSEARCH_USERNAME=${OPENSEARCH_USERNAME}
       - OPENSEARCH_PASSWORD=${OPENSEARCH_PASSWORD}
       - OPENSEARCH_HOST=${LANGFLOW_OPENSEARCH_HOST:-${OPENSEARCH_HOST:-opensearch}}
       - OPENSEARCH_PORT=${LANGFLOW_OPENSEARCH_PORT:-${OPENSEARCH_PORT:-9200}}
       - OPENSEARCH_URL=https://${LANGFLOW_OPENSEARCH_HOST:-${OPENSEARCH_HOST:-opensearch}}:${LANGFLOW_OPENSEARCH_PORT:-${OPENSEARCH_PORT:-9200}}
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
-      - OPENSEARCH_INDEX_NAME=${OPENSEARCH_INDEX_NAME:-documents}
       - DOCLING_SERVE_URL=${DOCLING_SERVE_URL:-http://host.docker.internal:5001}
       - FILENAME=None
       - MIMETYPE=None
       - FILESIZE=0
       - SELECTED_EMBEDDING_MODEL=${SELECTED_EMBEDDING_MODEL:-text-embedding-3-small}
-<<<<<<< HEAD
-      - LANGFLOW_VARIABLES_TO_GET_FROM_ENVIRONMENT=JWT,OPENRAG-QUERY-FILTER,OPENSEARCH_PASSWORD,OPENSEARCH_URL,DOCLING_SERVE_URL,OWNER,OWNER_NAME,OWNER_EMAIL,CONNECTOR_TYPE,DOCUMENT_ID,SOURCE_URL,ALLOWED_USERS,ALLOWED_GROUPS,FILENAME,MIMETYPE,FILESIZE,SELECTED_EMBEDDING_MODEL,OPENAI_API_KEY,ANTHROPIC_API_KEY,WATSONX_APIKEY,WATSONX_URL,WATSONX_PROJECT_ID,OLLAMA_BASE_URL,OPENSEARCH_INDEX_NAME
-=======
-      - LANGFLOW_VARIABLES_TO_GET_FROM_ENVIRONMENT=JWT,OPENRAG-QUERY-FILTER,OPENSEARCH_USERNAME,OPENSEARCH_PASSWORD,OPENSEARCH_URL,DOCLING_SERVE_URL,OWNER,OWNER_NAME,OWNER_EMAIL,CONNECTOR_TYPE,DOCUMENT_ID,SOURCE_URL,ALLOWED_USERS,ALLOWED_GROUPS,FILENAME,MIMETYPE,FILESIZE,SELECTED_EMBEDDING_MODEL,OPENAI_API_KEY,ANTHROPIC_API_KEY,WATSONX_APIKEY,WATSONX_URL,WATSONX_PROJECT_ID,OLLAMA_BASE_URL,VLM_ENDPOINT,VLM_MODEL,VLM_API_KEY,OPENSEARCH_INDEX_NAME
->>>>>>> d769a6f396946c315c21c62a7253c80b5962416e
+      - LANGFLOW_VARIABLES_TO_GET_FROM_ENVIRONMENT=JWT,OPENRAG-QUERY-FILTER,DEPARTMENT_CONTEXT,ROLE_CONTEXT,OPENSEARCH_USERNAME,OPENSEARCH_PASSWORD,OPENSEARCH_URL,OPENSEARCH_INDEX_NAME,DOCLING_SERVE_URL,OWNER,OWNER_NAME,OWNER_EMAIL,CONNECTOR_TYPE,DOCUMENT_ID,SOURCE_URL,ALLOWED_USERS,ALLOWED_GROUPS,FILENAME,MIMETYPE,FILESIZE,SELECTED_EMBEDDING_MODEL,OPENAI_API_KEY,ANTHROPIC_API_KEY,WATSONX_APIKEY,WATSONX_URL,WATSONX_PROJECT_ID,OLLAMA_BASE_URL,VLM_ENDPOINT,VLM_MODEL,VLM_API_KEY
       - LANGFLOW_LOG_LEVEL=DEBUG
       - LANGFLOW_WORKERS=${LANGFLOW_WORKERS:-1}
       - LANGFLOW_AUTO_LOGIN=${LANGFLOW_AUTO_LOGIN}

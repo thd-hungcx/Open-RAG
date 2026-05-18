@@ -4,6 +4,7 @@ Public API v1 Chat endpoint.
 Provides chat functionality with streaming support and conversation history.
 Uses API key authentication. Routes through Langflow (chat_service.langflow_chat).
 """
+
 import json
 from typing import Optional, Any, Dict
 
@@ -11,7 +12,12 @@ from fastapi import Depends
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse, StreamingResponse
 from utils.logging_config import get_logger
-from auth_context import set_search_filters, set_search_limit, set_score_threshold, set_auth_context
+from auth_context import (
+    set_search_filters,
+    set_search_limit,
+    set_score_threshold,
+    set_auth_context,
+)
 from dependencies import get_chat_service, get_session_manager, get_api_key_user_async
 from session_manager import User
 
@@ -26,6 +32,8 @@ class ChatV1Body(BaseModel):
     limit: int = 10
     score_threshold: float = 0
     filter_id: Optional[str] = None
+    role: Optional[str] = None
+    department: Optional[str] = None
 
 
 def _extract_sources(item: dict) -> list[dict]:
@@ -33,13 +41,15 @@ def _extract_sources(item: dict) -> list[dict]:
     sources = []
     for result in item.get("results", []):
         if isinstance(result, dict) and "text" in result:
-            sources.append({
-                "filename": result.get("filename", ""),
-                "text": result.get("text", ""),
-                "score": result.get("score", 0),
-                "page": result.get("page"),
-                "mimetype": result.get("mimetype"),
-            })
+            sources.append(
+                {
+                    "filename": result.get("filename", ""),
+                    "text": result.get("text", ""),
+                    "score": result.get("score", 0),
+                    "page": result.get("page"),
+                    "mimetype": result.get("mimetype"),
+                }
+            )
     return sources
 
 
@@ -47,8 +57,10 @@ async def _transform_stream_to_sse(raw_stream, chat_id_container: dict):
     """Transform raw Langflow streaming format to clean SSE events for v1 API."""
     full_text = ""
     chat_id = None
+    chunk_str = ""
 
     async for chunk in raw_stream:
+        chunk_str = ""
         try:
             if isinstance(chunk, bytes):
                 chunk_str = chunk.decode("utf-8").strip()
@@ -81,7 +93,9 @@ async def _transform_stream_to_sse(raw_stream, chat_id_container: dict):
 
             # Emit sources from retrieval tool calls
             item = chunk_data.get("item", {})
-            if item.get("type") in ("retrieval_call", "tool_call") and item.get("results"):
+            if item.get("type") in ("retrieval_call", "tool_call") and item.get(
+                "results"
+            ):
                 sources = _extract_sources(item)
                 if sources:
                     yield f"data: {json.dumps({'type': 'sources', 'sources': sources})}\n\n"
@@ -118,7 +132,8 @@ async def chat_create_endpoint(
         set_search_filters(body.filters)
     set_search_limit(body.limit)
     set_score_threshold(body.score_threshold)
-    set_auth_context(user_id, jwt_token)
+    if isinstance(jwt_token, str) and jwt_token:
+        set_auth_context(user_id, jwt_token)
 
     if body.stream:
         raw_stream = await chat_service.langflow_chat(
@@ -128,12 +143,18 @@ async def chat_create_endpoint(
             previous_response_id=body.chat_id,
             stream=True,
             filter_id=body.filter_id,
+            role=body.role,
+            department=body.department,
         )
         chat_id_container = {}
         return StreamingResponse(
             _transform_stream_to_sse(raw_stream, chat_id_container),
             media_type="text/event-stream",
-            headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            },
         )
     else:
         result = await chat_service.langflow_chat(
@@ -143,12 +164,16 @@ async def chat_create_endpoint(
             previous_response_id=body.chat_id,
             stream=False,
             filter_id=body.filter_id,
+            role=body.role,
+            department=body.department,
         )
-        return JSONResponse({
-            "response": result.get("response", ""),
-            "chat_id": result.get("response_id"),
-            "sources": result.get("sources", []),
-        })
+        return JSONResponse(
+            {
+                "response": result.get("response", ""),
+                "chat_id": result.get("response_id"),
+                "sources": result.get("sources", []),
+            }
+        )
 
 
 async def chat_list_endpoint(
@@ -171,7 +196,9 @@ async def chat_list_endpoint(
         return JSONResponse({"conversations": conversations})
     except Exception as e:
         logger.error("Failed to list conversations", error=str(e), user_id=user.user_id)
-        return JSONResponse({"error": f"Failed to list conversations: {str(e)}"}, status_code=500)
+        return JSONResponse(
+            {"error": f"Failed to list conversations: {str(e)}"}, status_code=500
+        )
 
 
 async def chat_get_endpoint(
@@ -201,21 +228,34 @@ async def chat_get_endpoint(
                 "timestamp": msg.get("timestamp"),
             }
             # Include token usage if available (from Responses API)
-            usage = msg.get("response_data", {}).get("usage") if isinstance(msg.get("response_data"), dict) else None
+            usage = (
+                msg.get("response_data", {}).get("usage")
+                if isinstance(msg.get("response_data"), dict)
+                else None
+            )
             if usage:
                 message_data["usage"] = usage
             messages.append(message_data)
 
-        return JSONResponse({
-            "chat_id": conversation.get("response_id"),
-            "title": conversation.get("title", ""),
-            "created_at": conversation.get("created_at"),
-            "last_activity": conversation.get("last_activity"),
-            "messages": messages,
-        })
+        return JSONResponse(
+            {
+                "chat_id": conversation.get("response_id"),
+                "title": conversation.get("title", ""),
+                "created_at": conversation.get("created_at"),
+                "last_activity": conversation.get("last_activity"),
+                "messages": messages,
+            }
+        )
     except Exception as e:
-        logger.error("Failed to get conversation", error=str(e), user_id=user.user_id, chat_id=chat_id)
-        return JSONResponse({"error": f"Failed to get conversation: {str(e)}"}, status_code=500)
+        logger.error(
+            "Failed to get conversation",
+            error=str(e),
+            user_id=user.user_id,
+            chat_id=chat_id,
+        )
+        return JSONResponse(
+            {"error": f"Failed to get conversation: {str(e)}"}, status_code=500
+        )
 
 
 async def chat_delete_endpoint(
@@ -236,5 +276,12 @@ async def chat_delete_endpoint(
                 status_code=500,
             )
     except Exception as e:
-        logger.error("Failed to delete conversation", error=str(e), user_id=user.user_id, chat_id=chat_id)
-        return JSONResponse({"error": f"Failed to delete conversation: {str(e)}"}, status_code=500)
+        logger.error(
+            "Failed to delete conversation",
+            error=str(e),
+            user_id=user.user_id,
+            chat_id=chat_id,
+        )
+        return JSONResponse(
+            {"error": f"Failed to delete conversation: {str(e)}"}, status_code=500
+        )

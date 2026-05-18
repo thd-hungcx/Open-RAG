@@ -1,10 +1,15 @@
 import json
 import asyncio
 import httpx
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from config.settings import LANGFLOW_INGEST_FLOW_ID, LANGFLOW_URL_INGEST_FLOW_ID, clients
+from config.settings import (
+    LANGFLOW_INGEST_FLOW_ID,
+    LANGFLOW_URL_INGEST_FLOW_ID,
+    clients,
+)
 from utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -22,7 +27,9 @@ class LangflowFileService:
             return fallback
 
         try:
-            response = await clients.langflow_request("GET", f"/api/v1/flows/{self.flow_id_ingest}")
+            response = await clients.langflow_request(
+                "GET", f"/api/v1/flows/{self.flow_id_ingest}"
+            )
             if response.status_code >= 400:
                 return fallback
 
@@ -44,7 +51,9 @@ class LangflowFileService:
         except Exception:
             return fallback
 
-    async def _attach_docling_file_paths(self, tweaks: Dict[str, Any], file_paths: List[str]) -> None:
+    async def _attach_docling_file_paths(
+        self, tweaks: Dict[str, Any], file_paths: List[str]
+    ) -> None:
         if not file_paths:
             return
 
@@ -137,6 +146,7 @@ class LangflowFileService:
         shared: bool = False,
         is_confidential: bool = False,
         department: Optional[str] = None,
+        resolved_index: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Trigger the ingestion flow with provided file paths.
@@ -156,6 +166,31 @@ class LangflowFileService:
 
         # Pass files via tweaks to DoclingRemote component(s) from the current flow
         await self._attach_docling_file_paths(tweaks, file_paths)
+
+        # Inject resolved index name directly into OpenSearch component via tweaks
+        os_component_id = "OpenSearchVectorStoreComponentMultimodalMultiEmbedding-Fqt7z"
+        if resolved_index:
+            if os_component_id not in tweaks:
+                tweaks[os_component_id] = {}
+            tweaks[os_component_id]["index_name"] = resolved_index
+            tweaks[os_component_id]["index"] = resolved_index
+            logger.info(
+                f"[LF] Injecting index_name='{resolved_index}' via tweaks into {os_component_id}"
+            )
+
+        opensearch_username = os.getenv("OPENSEARCH_USERNAME", "")
+        opensearch_password = os.getenv("OPENSEARCH_PASSWORD", "")
+        if opensearch_username or opensearch_password:
+            if os_component_id not in tweaks:
+                tweaks[os_component_id] = {}
+            if opensearch_username:
+                tweaks[os_component_id]["username"] = opensearch_username
+            if opensearch_password:
+                tweaks[os_component_id]["password"] = opensearch_password
+            logger.info(
+                "[LF] Injecting OpenSearch basic auth credentials into %s",
+                os_component_id,
+            )
 
         # Pass metadata via tweaks to OpenSearch component
         metadata_tweaks = []
@@ -184,17 +219,25 @@ class LangflowFileService:
             bool(jwt_token),
         )
         # To compute the file size in bytes, use len() on the file content (which should be bytes)
-        file_size_bytes = len(file_tuples[0][1]) if file_tuples and len(file_tuples[0]) > 1 else 0
+        file_size_bytes = (
+            len(file_tuples[0][1]) if file_tuples and len(file_tuples[0]) > 1 else 0
+        )
         # Avoid logging full payload to prevent leaking sensitive data (e.g., JWT)
 
         # Extract file metadata if file_tuples is provided
-        filename = str(file_tuples[0][0]) if file_tuples and len(file_tuples) > 0 else ""
-        mimetype = str(file_tuples[0][2]) if file_tuples and len(file_tuples) > 0 and len(file_tuples[0]) > 2 else ""
+        filename = (
+            str(file_tuples[0][0]) if file_tuples and len(file_tuples) > 0 else ""
+        )
+        mimetype = (
+            str(file_tuples[0][2])
+            if file_tuples and len(file_tuples) > 0 and len(file_tuples[0]) > 2
+            else ""
+        )
 
         # Get the current embedding model and provider credentials from config
         from config.settings import get_openrag_config
         from utils.langflow_headers import add_provider_credentials_to_headers
-        
+
         config = get_openrag_config()
         embedding_model = config.knowledge.embedding_model
 
@@ -208,11 +251,18 @@ class LangflowFileService:
             "X-Langflow-Global-Var-MIMETYPE": mimetype,
             "X-Langflow-Global-Var-FILESIZE": str(file_size_bytes),
             "X-Langflow-Global-Var-SELECTED_EMBEDDING_MODEL": str(embedding_model),
-            "X-Langflow-Global-Var-DOCUMENT_ID": str(document_id) if document_id else "",
+            "X-Langflow-Global-Var-DOCUMENT_ID": str(document_id)
+            if document_id
+            else "",
             "X-Langflow-Global-Var-SOURCE_URL": str(source_url) if source_url else "",
             "X-Langflow-Global-Var-SHARED": str(shared).lower(),
             "X-Langflow-Global-Var-IS_CONFIDENTIAL": str(is_confidential).lower(),
             "X-Langflow-Global-Var-DEPARTMENT": str(department) if department else "",
+            "X-Langflow-Global-Var-OPENSEARCH_INDEX_NAME": str(resolved_index)
+            if resolved_index
+            else "",
+            "X-Langflow-Global-Var-OPENSEARCH_USERNAME": opensearch_username,
+            "X-Langflow-Global-Var-OPENSEARCH_PASSWORD": opensearch_password,
         }
 
         # Serialize ACL lists as JSON strings for Langflow global vars
@@ -225,9 +275,11 @@ class LangflowFileService:
             headers["X-Langflow-Global-Var-ALLOWED_GROUPS"] = json.dumps(
                 allowed_groups or []
             )
-        
+
         # Add provider credentials as global variables for ingestion
-        await add_provider_credentials_to_headers(headers, config, flows_service=self.flows_service, jwt_token=jwt_token)
+        await add_provider_credentials_to_headers(
+            headers, config, flows_service=self.flows_service, jwt_token=jwt_token
+        )
         logger.info(f"[LF] Headers {headers}")
         logger.info(f"[LF] Payload {payload}")
         resp = await clients.langflow_request(
@@ -246,7 +298,7 @@ class LangflowFileService:
                 reason=resp.reason_phrase,
                 body=resp.text[:1000],
             )
-            
+
             # Extract error message from Langflow response
             error_message = f"Server error '{resp.status_code} {resp.reason_phrase}'"
             try:
@@ -266,9 +318,9 @@ class LangflowFileService:
                         error_message = detail["message"]
             except Exception:
                 pass
-            
+
             raise Exception(error_message)
-        
+
         # Check if response is actually JSON before parsing
         content_type = resp.headers.get("content-type", "")
         if "application/json" not in content_type:
@@ -283,7 +335,7 @@ class LangflowFileService:
                 f"This may indicate the ingestion flow failed or the endpoint is incorrect. "
                 f"Response preview: {resp.text[:500]}"
             )
-        
+
         try:
             resp_json = resp.json()
         except Exception as e:
@@ -333,15 +385,14 @@ class LangflowFileService:
             "X-Langflow-Global-Var-OWNER_EMAIL": str(owner_email),
             "X-Langflow-Global-Var-CONNECTOR_TYPE": str(connector_type),
             "X-Langflow-Global-Var-SELECTED_EMBEDDING_MODEL": str(embedding_model),
-
-            "X-Langflow-Global-Var-DOCUMENT_ID":"",
+            "X-Langflow-Global-Var-DOCUMENT_ID": "",
             "X-Langflow-Global-Var-SOURCE_URL": str(docs_url),
-    
-            "X-Langflow-Global-Var-ALLOWED_USERS": json.dumps( []),
-            "X-Langflow-Global-Var-ALLOWED_GROUPS": json.dumps( []),
+            "X-Langflow-Global-Var-ALLOWED_USERS": json.dumps([]),
+            "X-Langflow-Global-Var-ALLOWED_GROUPS": json.dumps([]),
         }
-        await add_provider_credentials_to_headers(headers, config, flows_service=self.flows_service, jwt_token=jwt_token)
-
+        await add_provider_credentials_to_headers(
+            headers, config, flows_service=self.flows_service, jwt_token=jwt_token
+        )
 
         logger.info(
             "[LF] Running URL ingestion flow",
@@ -397,7 +448,9 @@ class LangflowFileService:
         max_attempts = 2
         last_error: Exception | None = None
 
-        flow_file = Path(__file__).resolve().parents[2] / "flows" / "openrag_url_mcp.json"
+        flow_file = (
+            Path(__file__).resolve().parents[2] / "flows" / "openrag_url_mcp.json"
+        )
         if not flow_file.exists():
             raise ValueError(
                 "LANGFLOW_URL_INGEST_FLOW_ID is invalid and "
@@ -522,6 +575,7 @@ class LangflowFileService:
         shared: bool = False,
         is_confidential: bool = False,
         department: Optional[str] = None,
+        resolved_index: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Combined upload, ingest, and delete operation.
@@ -616,6 +670,7 @@ class LangflowFileService:
                 shared=shared,
                 is_confidential=is_confidential,
                 department=department,
+                resolved_index=resolved_index,
             )
             logger.debug("[LF] Ingestion completed successfully")
         except Exception as e:
